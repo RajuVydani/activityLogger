@@ -8,14 +8,22 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.automation.dao.AgentDAO;
 import com.automation.exceptions.CustomException;
 import com.automation.exceptions.ValidationException;
+import com.automation.idao.IAgentDAO;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
 //Test url
 //http://localhost:8082/TimeTracker/rest/agent/rajuV@cognizant.com
 @Path("/agent")
 public class TrackerService {
+	
+	private IAgentDAO agentDAO;
+	
+	public void setAgentDAO(IAgentDAO agentDAO) {
+		this.agentDAO = agentDAO;
+	}
 
 	@GET
 	@Path("/{param}")
@@ -48,8 +56,7 @@ public class TrackerService {
 	 * @throws CustomException 
 	 */
 	@POST
-	@Path("/{agentName}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/{agentName}")	
 	public Response storeAgentData(@PathParam("agentName") String agentName) throws ValidationException, CustomException  {
 		System.out.println(AppConstants.METHOD + "-storeAgentData()");
 		
@@ -62,11 +69,15 @@ public class TrackerService {
 			if("error".equalsIgnoreCase(agentName)) {
 				throw new NullPointerException();
 			}
-		} catch (Exception e) {		
+			
+			Agent agent = new Agent();
+			//DAO call...
+			String status = agentDAO.getAgentData(agent);
+			
+			return Response.status(200).entity(agentName + " Stored " + status).build();
+		} catch (Exception e) {
+			e.printStackTrace();
 			throw new CustomException();
 		}
-		return Response.status(200).entity(agentName).build();
-		
 	}
-
 }
