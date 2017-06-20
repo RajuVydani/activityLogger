@@ -13,7 +13,26 @@ public class Agent {
 	private String logoutTime;
 	private String productiveHours;
 	private String idleHours;
+	private String ErrorDesc;
 	
+	
+	public String getErrorDesc() {
+		return ErrorDesc;
+	}
+
+	public void setErrorDesc(String errorDesc) {
+		ErrorDesc = errorDesc;
+	}
+	private String DATE;
+	
+	public String getDATE() {
+		return DATE;
+	}
+
+	public void setDATE(String dATE) {
+		DATE = dATE;
+	}
+
 	@Override
 	public String toString() {
 		return "Agent [name=" + name + ", emailId=" + emailId + "]";

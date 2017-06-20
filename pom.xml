@@ -97,6 +97,27 @@
 		    <artifactId>derbyclient</artifactId>
 		    <version>10.13.1.1</version>
 		</dependency>
+		
+		<!-- Quartz scheduler -->
+				<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>2.1.5</version>
+		</dependency>
+
+		 		<dependency>
+			<groupId>javax.transaction</groupId>
+			<artifactId>jta</artifactId>
+			<version>1.1</version>
+		</dependency>
+		
+		
+		<!-- Log 4j -->
+			<dependency>
+ <groupId>log4j</groupId>
+ <artifactId>log4j</artifactId>
+ <version>1.2.17</version>
+</dependency>
 	</dependencies>
 
 	<build>

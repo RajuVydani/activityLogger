@@ -1,0 +1,15 @@
+
+2017-06-19 18:07:44,633 +0530 [main] DEBUG (Log4jExample.java:16) - getWelcome is executed!
+2017-06-19 18:07:58,739 +0530 [main] DEBUG (SchedulerJob.java:37) - getWelcome is executed!
+2017-06-19 18:09:31,368 +0530 [main] DEBUG (SchedulerJob.java:37) - getWelcome is executed!
+2017-06-19 18:16:53,210 +0530 [main] DEBUG (Log4jExample.java:16) - getWelcome is executed!
+2017-06-19 18:32:13,639 +0530 [main] DEBUG (Log4jExample.java:23) - My Debug Log
+2017-06-19 18:32:13,660 +0530 [main] INFO  (Log4jExample.java:24) - My Info Log
+2017-06-19 18:32:13,660 +0530 [main] WARN  (Log4jExample.java:25) - My Warn Log
+2017-06-19 18:32:13,660 +0530 [main] ERROR (Log4jExample.java:26) - My error log
+2017-06-19 18:32:13,660 +0530 [main] FATAL (Log4jExample.java:27) - My fatal log
+2017-06-19 18:33:01,085 +0530 [main] DEBUG (Log4jExample.java:23) - My Debug Log
+2017-06-19 18:33:01,087 +0530 [main] INFO  (Log4jExample.java:24) - My Info Log
+2017-06-19 18:33:01,087 +0530 [main] WARN  (Log4jExample.java:25) - My Warn Log
+2017-06-19 18:33:01,087 +0530 [main] ERROR (Log4jExample.java:26) - My error log
+2017-06-19 18:33:01,087 +0530 [main] FATAL (Log4jExample.java:27) - My fatal log
