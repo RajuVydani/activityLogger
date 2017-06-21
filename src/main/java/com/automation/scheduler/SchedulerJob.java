@@ -51,28 +51,19 @@ public class SchedulerJob implements Job {
 public void scheduler()
 {
 	
-	if(logger.isDebugEnabled()){
-		logger.debug("getWelcome is executed=======Scheduler!");
-	}
-
- 
 	ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
 
 	 
 
 	try {
 
-		logger.info("Reading Temporary Table");
+		System.out.println("Reading Temporary Table");
 		AgentDAO dao = (AgentDAO) context.getBean("agentDAO");
 		/////////////////////////READING CHROME TEMPORARY TABLE///////////////////		
-		List<Agent> chromtemlist = dao.readChromTempTable();
+		List<Agent> chromtemlist = dao.readChromTempMasterTable();
 
 		for (Agent e : chromtemlist) {
-			logger.info(e.getEmailId());
-			logger.info(e.getName());
-			logger.info(e.getIdleFrom());
-			logger.info(e.getIdleTo());
-			logger.info(e.getWebsitesVisited());
+		 
 			List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId());
 			String agentName = "";
 			String ShiftTimings = "";
@@ -97,67 +88,132 @@ public void scheduler()
 				}
 
 			}
-			logger.info("errorDesc" + errorDesc);
+			System.out.println("errorDesc" + errorDesc);
 			if (errorDesc.trim().equalsIgnoreCase("")) {
 
-				int count = dao.totalAgentCountInDayMaster(e.getEmailId(), "2016-06-18");
-				logger.info("count quwery====" + count);
+				String LoginDate[]=e.getLoginTime().split(" ");
+				int count = dao.totalAgentCountInDayMaster(e.getEmailId(),  LoginDate[0]);
+				System.out.println("count quwery====" + count);
 				if (count == 0) {
 
 					Agent dataInsert = new Agent();
-					dataInsert.setDATE("2016-06-18");
+					dataInsert.setDATE(LoginDate[0]);
 					dataInsert.setEmailId(e.getEmailId());
 					dataInsert.setShiftTimings(ShiftTimings);
 					dataInsert.setName(agentName);
+					dataInsert.setLoginTime(e.getLoginTime());
+					dataInsert.setLogoutTime(e.getLogoutTime());
+					dataInsert.setProductiveHours(e.getProductiveHours());
+					
 					int status = dao.dataInsertionInDayMaster(dataInsert);
+					if(status >= 0)
+					{
+						Agent dataDelete = new Agent();
+						dataDelete.setEmailId(e.getEmailId());
+						dataDelete.setLoginTime(e.getLoginTime());
+						
+						int deleteStatus = dao.deleteFromChromeTempMaster(dataDelete);
+						if(deleteStatus >= 0)
+						{
+							
+						
+							
+							Agent dataInsertInDayDetail = new Agent();
+							dataInsertInDayDetail.setEmailId(e.getEmailId());
+							dataInsertInDayDetail.setLogoutTime(e.getLogoutTime());
+							
+							int dataInsertInDayDetailStatus = dao.dataInsertionInDayDetail(dataInsertInDayDetail);
+							if(dataInsertInDayDetailStatus >= 0)
+							{
+								
+								Agent dataDeletefromChromTempDetails = new Agent();
+							 
+								int dataDeletionInDayDetailStatus = dao.deleteFromChromeTempDetail(dataInsertInDayDetail);
+								if(dataDeletionInDayDetailStatus >= 0)
+								{
+									
+									Agent idleHrsCalculation= new Agent();
+									idleHrsCalculation.setEmailId(e.getEmailId());
+									idleHrsCalculation.setLogoutTime(e.getLogoutTime());
+									idleHrsCalculation.setLoginTime(e.getLoginTime());
+									List<Agent> idlehrslist = dao.CalculateIdleHrs(idleHrsCalculation);
+									for (Agent i1 : idlehrslist) {
+										Agent idleHrsUpdation= new Agent();
+										idleHrsUpdation.setEmailId(e.getEmailId());
+										idleHrsUpdation.setDATE(LoginDate[0]);
+										idleHrsUpdation.setIdleHours(i1.getIdleHours());
+										
+										int idleHrsUpdationInDayMaster = dao.updateIdleHrsInDayMaster(idleHrsUpdation);
+										if(idleHrsUpdationInDayMaster >= 0)
+										{
+											
+											
+										}
+										
+									}
+								
+							}
+							
+							
+							
+						}
+					}
 
 				}
-
-				Agent dataInsert = new Agent();
-				dataInsert.setDATE("2016-06-18");
-				dataInsert.setEmailId(e.getEmailId());
-				dataInsert.setName(agentName);
-				dataInsert.setShiftTimings(ShiftTimings);
-				dataInsert.setIdleFrom(e.getIdleFrom());
-				dataInsert.setIdleTo(e.getIdleTo());
-				dataInsert.setWebsitesVisited(e.getWebsitesVisited());
-
-				int status = dao.dataInsertionInDayDetail(dataInsert);
-
-				logger.info("status===" + status);
-
-				if (status == 1) {
-					Agent dataDelete = new Agent();
-
-					dataDelete.setEmailId(e.getEmailId());
-
-					dataDelete.setIdleFrom(e.getIdleFrom());
-					dao.deleteFromChromeTemp(dataDelete);
 				}
+			 
+				
+		 
 
 			}
 
 			else {
+				
 				Agent dataInsert = new Agent();
 				 
+
 				dataInsert.setEmailId(e.getEmailId());
+ 
 				dataInsert.setName(e.getName());
-	 
-				dataInsert.setIdleFrom(e.getIdleFrom());
-				dataInsert.setIdleTo(e.getIdleTo());
-				dataInsert.setWebsitesVisited(e.getWebsitesVisited());
-				dataInsert.setErrorDesc(errorDesc+" missing in Agent Master");
+				dataInsert.setLoginTime(e.getLoginTime());
+				dataInsert.setLogoutTime(e.getLogoutTime());
+				dataInsert.setProductiveHours(e.getProductiveHours());
+				
+				dataInsert.setErrorDesc("Email Id is missing in Agent Master");
 				int status = dao.dataInsertionInException(dataInsert);
 
-				logger.info("status===" + status);
+				System.out.println("status===" + status);
 
-				if (status == 1) {
+				if (status >= 0) {
 					Agent dataDelete = new Agent();
-
 					dataDelete.setEmailId(e.getEmailId());
-
-					dataDelete.setIdleFrom(e.getIdleFrom());
-					dao.deleteFromChromeTemp(dataDelete);
+					dataDelete.setLoginTime(e.getLoginTime());
+					
+					int deleteStatus = dao.deleteFromChromeTempMaster(dataDelete);
+					if(deleteStatus>= 0)
+					{
+						
+					
+						
+						Agent dataInsertInDayDetail = new Agent();
+						dataInsertInDayDetail.setEmailId(e.getEmailId());
+						dataInsertInDayDetail.setLogoutTime(e.getLogoutTime());
+						
+						int dataInsertInDayDetailStatus = dao.dataInsertionInDayDetail(dataInsertInDayDetail);
+						if(dataInsertInDayDetailStatus >= 0)
+						{
+							int dataDeletionInDayDetailStatus = dao.deleteFromChromeTempDetail(dataInsertInDayDetail);
+							if(dataDeletionInDayDetailStatus >= 0)
+							{
+								
+							
+							
+						}
+						
+						
+						
+					}
+				}
 				}
 	 
 			}
@@ -167,14 +223,12 @@ public void scheduler()
 		
 		/////////////////////////READING CHROME EXCEPTION TABLE///////////////////
 		
-		List<Agent> chromeExceplist = dao.readChromExceptionTable();
 
-		for (Agent e : chromeExceplist) {
-			logger.info(e.getEmailId());
-			logger.info(e.getName());
-			logger.info(e.getIdleFrom());
-			logger.info(e.getIdleTo());
-			logger.info(e.getWebsitesVisited());
+		
+		List<Agent> chromExceplist = dao.readChromExceptionTable();
+
+		for (Agent e : chromExceplist) {
+		 
 			List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId());
 			String agentName = "";
 			String ShiftTimings = "";
@@ -199,65 +253,82 @@ public void scheduler()
 				}
 
 			}
-			logger.info("errorDesc" + errorDesc);
+			System.out.println("errorDesc" + errorDesc);
 			if (errorDesc.trim().equalsIgnoreCase("")) {
 
-				int count = dao.totalAgentCountInDayMaster(e.getEmailId(), "2016-06-18");
-				logger.info("count quwery====" + count);
+				String LoginDate[]=e.getLoginTime().split(" ");
+				int count = dao.totalAgentCountInDayMaster(e.getEmailId(),  LoginDate[0]);
+				System.out.println("count quwery====" + count);
 				if (count == 0) {
 
 					Agent dataInsert = new Agent();
-					dataInsert.setDATE("2016-06-18");
+					dataInsert.setDATE(LoginDate[0]);
 					dataInsert.setEmailId(e.getEmailId());
 					dataInsert.setShiftTimings(ShiftTimings);
 					dataInsert.setName(agentName);
+					dataInsert.setLoginTime(e.getLoginTime());
+					dataInsert.setLogoutTime(e.getLogoutTime());
+					dataInsert.setProductiveHours(e.getProductiveHours());
+					
 					int status = dao.dataInsertionInDayMaster(dataInsert);
+					if(status >= 0)
+					{
+						Agent dataDelete = new Agent();
+						dataDelete.setEmailId(e.getEmailId());
+						dataDelete.setLoginTime(e.getLoginTime());
+						
+						int deleteStatus = dao.deleteFromChromeException(dataDelete);
+						if(deleteStatus >= 0)
+						{
+							
+						
+							
+							Agent dataInsertInDayDetail = new Agent();
+							dataInsertInDayDetail.setEmailId(e.getEmailId());
+							dataInsertInDayDetail.setLogoutTime(e.getLogoutTime());
+							
+							Agent idleHrsCalculation= new Agent();
+							idleHrsCalculation.setEmailId(e.getEmailId());
+							idleHrsCalculation.setLogoutTime(e.getLogoutTime());
+							idleHrsCalculation.setLoginTime(e.getLoginTime());
+							List<Agent> idlehrslist = dao.CalculateIdleHrs(idleHrsCalculation);
+							for (Agent i1 : idlehrslist) {
+								Agent idleHrsUpdation= new Agent();
+								idleHrsUpdation.setEmailId(e.getEmailId());
+								idleHrsUpdation.setDATE(LoginDate[0]);
+								idleHrsUpdation.setIdleHours(i1.getIdleHours());
+								
+								int idleHrsUpdationInDayMaster = dao.updateIdleHrsInDayMaster(idleHrsUpdation);
+								if(idleHrsUpdationInDayMaster == 1)
+								{
+									
+									
+								}
+							
+							
+						}
+					}
 
 				}
-
-				Agent dataInsert = new Agent();
-				dataInsert.setDATE("2016-06-18");
-				dataInsert.setEmailId(e.getEmailId());
-				dataInsert.setName(agentName);
-				dataInsert.setShiftTimings(ShiftTimings);
-				dataInsert.setIdleFrom(e.getIdleFrom());
-				dataInsert.setIdleTo(e.getIdleTo());
-				dataInsert.setWebsitesVisited(e.getWebsitesVisited());
-
-				int status = dao.dataInsertionInDayDetail(dataInsert);
-
-				logger.info("status===" + status);
-
-				if (status == 1) {
-					Agent dataDelete = new Agent();
-
-					dataDelete.setEmailId(e.getEmailId());
-
-					dataDelete.setIdleFrom(e.getIdleFrom());
-					dao.deleteFromChromeException(dataDelete);
 				}
+			 
+				
+		 
 
 			}
 
 			else {
-			 
+				
+		 
 	 
 			}
 		}
 		
-		////////////////////////////// Update Idle Hrs//////////////////////
-		
-		List<Agent> idlehrslist = dao.CalculateIdleHrs();
-		for (Agent e : idlehrslist) {
-			Agent dataInsert = new Agent();
-			dataInsert.setDATE("2016-06-18");
-			dataInsert.setEmailId(e.getEmailId());
-dataInsert.setIdleHours(e.getIdleHours());
-
-			int status = dao.updateIdleHrsInDayDetail(dataInsert);
 		
 		
-		}
+		
+		
+		
 		
 		
 		
@@ -265,7 +336,7 @@ dataInsert.setIdleHours(e.getIdleHours());
 
 	} catch (Exception e) {
 		// TODO Auto-generated catch block
-		logger.error("Exception" + e);
+		System.out.println("Exception" + e);
 		e.printStackTrace();
 	}
 

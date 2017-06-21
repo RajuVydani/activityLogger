@@ -14,8 +14,16 @@ public class Agent {
 	private String productiveHours;
 	private String idleHours;
 	private String ErrorDesc;
+	private String recordedTime;
 	
-	
+	public String getRecordedTime() {
+		return recordedTime;
+	}
+
+	public void setRecordedTime(String recordedTime) {
+		this.recordedTime = recordedTime;
+	}
+
 	public String getErrorDesc() {
 		return ErrorDesc;
 	}

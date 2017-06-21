@@ -61,6 +61,23 @@ public class AgentDAO implements IAgentDAO {
 		});
 		return "Successfully";
 	}
+	////////////////////////////////////
+	
+	public List<Agent> readChromTempMasterTable() {
+		return jdbcTemplate.query("select * from CHROME_TEMP_MASTER", new RowMapper<Agent>() {
+			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+				Agent e = new Agent();
+				e.setEmailId(rs.getString(1));
+				e.setName(rs.getString(2));
+			e.setProductiveHours(rs.getString(3));
+			e.setLoginTime(rs.getString(4));
+			e.setLogoutTime(rs.getString(5));
+
+				return e;
+			}
+		});
+	}
+
 
 	//////////////// Read Data From Chrom Temporary Table//////////////
 	public List<Agent> readChromTempTable() {
@@ -80,14 +97,17 @@ public class AgentDAO implements IAgentDAO {
 
 	//////////////// Read Data From Chrome Exception Table//////////////
 	public List<Agent> readChromExceptionTable() {
-		return jdbcTemplate.query("select * from CHROME_EXCEPTION_DETAILS", new RowMapper<Agent>() {
+		
+		
+ 
+		return jdbcTemplate.query("select EMAIL_ID,AGENT_NAME,PRODUCTIVITY_HRS,LOGIN_TIME,LOGOUT_TIME  from CHROME_EXCEPTION_DETAILS", new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 				Agent e = new Agent();
 				e.setEmailId(rs.getString(1));
 				e.setName(rs.getString(2));
-				e.setIdleFrom(rs.getString(3));
-				e.setIdleTo(rs.getString(4));
-				e.setWebsitesVisited(rs.getString(5));
+			e.setProductiveHours(rs.getString(3));
+			e.setLoginTime(rs.getString(4));
+			e.setLogoutTime(rs.getString(5));
 
 				return e;
 			}
@@ -106,19 +126,25 @@ public class AgentDAO implements IAgentDAO {
 					}
 				});
 	}
-
+ 
 	//////////////// Data Insertion In Day Master Table//////////////
 	public int dataInsertionInDayMaster(Agent e) {
-		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`  ) values('"
-				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "')";
+		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS` ) values('"
+				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"+e.getLoginTime()+"','"+e.getLogoutTime()+"',"+e.getProductiveHours()+")";
 		return jdbcTemplate.update(query);
 	}
 
 	//////////////// Data Insertion In Day Detail Table//////////////
 	public int dataInsertionInDayDetail(Agent e) {
-		String query = "insert into DAY_DETAIL(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED` ) values('"
-				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getIdleFrom() + "','"
-				+ e.getIdleTo() + "','" + e.getWebsitesVisited() + "')";
+		String query ="INSERT INTO DAY_DETAIL (`EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`)"
+				+ "SELECT `EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`"
+				+ "FROM CHROME_TEMP_DETAILS "
+				+ "WHERE EMAIL_ID='"
+				+ e.getEmailId()
+						+ "' AND TO_TIME <= '" + e.getLogoutTime() + "'";
+		
+		
+		
 		return jdbcTemplate.update(query);
 	}
 
@@ -130,26 +156,34 @@ public class AgentDAO implements IAgentDAO {
 	}
 
 	//////////////// Data Deletion in Chrome Temporary Table//////////////
-	public int deleteFromChromeTemp(Agent e) {
-		String query = "DELETE FROM CHROME_TEMP_DETAILS WHERE EMAIL_ID='" + e.getEmailId() + "' AND FROM_TIME='"
-				+ e.getIdleFrom() + "'";
+	public int deleteFromChromeTempDetail(Agent e) {
+		String query   ="DELETE FROM CHROME_TEMP_DETAILS "
+				+ "WHERE EMAIL_ID='"
+				+ e.getEmailId()
+						+ "' AND TO_TIME <= '" + e.getLogoutTime() + "'";
+		return jdbcTemplate.update(query);
+	}
+////
+	
+	
+	public int deleteFromChromeTempMaster(Agent e) {
+		String query = "DELETE FROM CHROME_TEMP_MASTER WHERE EMAIL_ID='" + e.getEmailId() + "' AND LOGIN_TIME='"
+				+ e.getLoginTime() + "'";
 
 		return jdbcTemplate.update(query);
 	}
-
 	//////////////// Data Insertion in Chrome Exception Table//////////////
 	public int dataInsertionInException(Agent e) {
-		String query = "insert into CHROME_EXCEPTION_DETAILS( `EMAIL_ID`, `AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ERROR_DESC` ) values('"
-				+ e.getEmailId() + "','" + e.getName() + "','" + e.getIdleFrom() + "','" + e.getIdleTo() + "','"
-				+ e.getWebsitesVisited() + "','" + e.getErrorDesc() + "')";
-		return jdbcTemplate.update(query);
+		String query = "insert into CHROME_EXCEPTION_DETAILS( `EMAIL_ID`, `AGENT_NAME`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS`,`ERROR_DESC` ) values("
+				+ "'" + e.getEmailId() + "','" + e.getName() + "','"+e.getLoginTime()+"','"+e.getLogoutTime()+"',"+e.getProductiveHours()+",'"+e.getErrorDesc()+"')";
+	return jdbcTemplate.update(query);
 	}
 
 	//////////////// Data Deletion in Chrome Exception Table//////////////
 	public int deleteFromChromeException(Agent e) {
-		String query = "DELETE FROM CHROME_EXCEPTION_DETAILS WHERE EMAIL_ID='" + e.getEmailId() + "' AND FROM_TIME='"
-				+ e.getIdleFrom() + "'";
-
+ 
+		String query = "DELETE FROM CHROME_EXCEPTION_DETAILS WHERE EMAIL_ID='" + e.getEmailId() + "' AND LOGIN_TIME='"
+				+ e.getLoginTime() + "'";
 		return jdbcTemplate.update(query);
 	}
 	
@@ -158,13 +192,12 @@ public class AgentDAO implements IAgentDAO {
 	
 	
 	
-	public List<Agent> CalculateIdleHrs() {
-		return jdbcTemplate.query("SELECT sum(TIMESTAMPDIFF(MINUTE,FROM_TIME,TO_TIME)),EMAIL_ID,DATE FROM DAY_DETAIL GROUP BY EMAIL_ID,DATE", new RowMapper<Agent>() {
+	public List<Agent> CalculateIdleHrs(Agent e) {
+		return jdbcTemplate.query("SELECT sum(TIMESTAMPDIFF(MINUTE,FROM_TIME,TO_TIME)) FROM DAY_DETAIL WHERE EMAIL_ID='"+e.getEmailId()+"' AND FROM_TIME >='"+e.getLoginTime()+"' AND TO_TIME <='"+e.getLogoutTime()+"'", new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 				Agent e = new Agent();
 				 e.setIdleHours(rs.getString(1));
-				e.setEmailId(rs.getString(2));
-			 e.setDATE(rs.getString(3));
+			 
 
 				return e;
 			}
@@ -175,13 +208,36 @@ public class AgentDAO implements IAgentDAO {
 ////////////////////////////////Idle Hrs Updation////////////////////
 	
 	
-	public int updateIdleHrsInDayDetail(Agent e) {
+	public int updateIdleHrsInDayMaster(Agent e) {
 		String query = "UPDATE DAY_MASTER SET IDLE_HRS="+e.getIdleHours()+" WHERE EMAIL_ID='" + e.getEmailId() + "' AND DATE='"
 				+ e.getDATE() + "'";
 
 		return jdbcTemplate.update(query);
 	}
+	////////////////////////////////////////////REST CALL FOR UPDATING PRODUCTIVITY HOURS//////
 	
+	//////////////// Check Agent Present in Agent Master Table//////////////
+	public int totalAgentCountInChromeMater(String emailId, String logindate) {
+		String sql = "select count(*) from CHROME_TEMP_MASTER WHERE EMAIL_ID='" + emailId + "' AND LOGIN_TIME='" + logindate + "'";
+
+		return jdbcTemplate.queryForInt(sql);
+	}
 	
+	public int dataInsertionInChromeMater(Agent e) {
+		String query = "insert into CHROME_TEMP_MASTER( `EMAIL_ID`, `AGENT_NAME`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS` ) values("
+				+ "'" + e.getEmailId() + "','" + e.getName() + "','"+e.getLoginTime()+"','"+e.getLogoutTime()+"',"+e.getProductiveHours()+")";
+	return jdbcTemplate.update(query);
+	}
 	
+	public int dataUpdateInChromeMater(Agent e) {
+		String query = "UPDATE CHROME_TEMP_MASTER SET LOGOUT_TIME='"+e.getLogoutTime()+"',PRODUCTIVITY_HRS="+e.getProductiveHours()+"   WHERE EMAIL_ID='" + e.getEmailId() + "' AND LOGIN_TIME='"
+				+ e.getLoginTime() + "'";
+
+		return jdbcTemplate.update(query);
+	}
+	public int dataInsertionInChromeDetails(Agent e) {
+		String query = "insert into CHROME_TEMP_DETAILS( `EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`) values("
+				+ "'" + e.getEmailId() + "','" + e.getName() + "','"+e.getIdleFrom()+"','"+e.getIdleTo()+"',"+e.getWebsitesVisited()+")";
+	return jdbcTemplate.update(query);
+	}
 }
