@@ -71,8 +71,8 @@ public class AgentDAO implements IAgentDAO {
 		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
 		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
 		String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <= '" + dateFormat.format(cal.getTime())
-				+ " 20:00:00'";
-		return jdbcTemplate.query("select * from CHROME_TEMP_MASTER", new RowMapper<Agent>() {
+				+ " 12:00:00'";
+		return jdbcTemplate.query(query, new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 				Agent e = new Agent();
 				e.setEmailId(rs.getString(1));
