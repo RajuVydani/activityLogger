@@ -106,7 +106,9 @@ public class TrackerService {
 				Agent agent = new Agent();
 				agent.setEmailId(agentEmailId);
 				agent.setName(agentName);
-				agent.setProductiveHours(productivityHours);
+				String seconds=productivityHours;
+				float minutes=(Float.parseFloat(seconds)/60);
+                agent.setProductiveHours(String.valueOf(minutes));
 				agent.setLoginTime(loginTime);
 				agent.setLogoutTime(logoutTime);
 				int count = dao.totalAgentCountInChromeMater(agentEmailId, loginTime);
@@ -169,7 +171,9 @@ public class TrackerService {
 				Agent agent = new Agent();
 				agent.setEmailId(agentEmailId);
 				agent.setName(agentName);
-				agent.setProductiveHours(productivityHours);
+				String seconds=productivityHours;
+				float minutes=(Float.parseFloat(seconds)/60);
+				agent.setProductiveHours(String.valueOf(minutes));
 				agent.setLoginTime(loginTime);
 				agent.setLogoutTime(logoutTime);
 				int count = dao.totalAgentCountInChromeMater(agentEmailId, loginTime);
