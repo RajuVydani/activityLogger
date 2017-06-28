@@ -161,7 +161,7 @@ public class AgentDAO implements IAgentDAO {
 	//////////////// Data Deletion in Chrome Temporary Table//////////////
 	public int deleteFromChromeTempDetail(Agent e) {
 		String query = "DELETE FROM CHROME_TEMP_DETAILS " + "WHERE EMAIL_ID='" + e.getEmailId() + "' AND TO_TIME <= ('"
-				+ e.getLogoutTime() + "' + INTERVAL 3 HOUR)";
+				+ e.getLogoutTime() + "' + INTERVAL 1 HOUR)";
 		return jdbcTemplate.update(query);
 	}
 	////
@@ -194,16 +194,16 @@ public class AgentDAO implements IAgentDAO {
 	public List<Agent> CalculateIdleHrs(Agent e) {
 		return jdbcTemplate.query(
 				"SELECT sum(TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME)) FROM DAY_DETAIL WHERE EMAIL_ID='" + e.getEmailId()
-						+ "' AND FROM_TIME >='" + e.getLoginTime() + "' AND TO_TIME <='" + e.getLogoutTime() + "'",
+						+ "' AND FROM_TIME >='" + e.getLoginTime() + "' AND FROM_TIME <='" + e.getLogoutTime() + "'",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
 						
 						String seconds=rs.getString(1);
 						float minutes=(Float.parseFloat(seconds)/60);
+						float hours = (minutes / 60);					 
 						
-						
-						e.setIdleHours( String.valueOf(minutes));
+						e.setIdleHours( String.valueOf(hours));
 
 						return e;
 					}
