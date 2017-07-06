@@ -7,10 +7,6 @@
 <title>TimeTracker</title>
 </head>
 <body>
-
-Time Tracker!!!
-
-
-
+	<jsp:forward page = "WEB-INF/jsp/login.jsp" />
 </body>
 </html>

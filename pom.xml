@@ -45,10 +45,16 @@
 			<version>3.0.5.RELEASE</version>
 		</dependency>
 
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
 			<version>3.0.5.RELEASE</version>
+		</dependency> -->
+		
+		<dependency>
+		    <groupId>org.springframework</groupId>
+		    <artifactId>spring-webmvc</artifactId>
+		    <version>3.0.5.RELEASE</version>
 		</dependency>
 		
 		<dependency>
@@ -92,11 +98,11 @@
 			<version>5.1.9</version>
 		</dependency>
 		<!-- DERBY database driver [For Dev Testing] -->
-		<dependency>
+		<!-- <dependency>
 		    <groupId>org.apache.derby</groupId>
 		    <artifactId>derbyclient</artifactId>
 		    <version>10.13.1.1</version>
-		</dependency>
+		</dependency> -->
 		
 		<!-- Quartz scheduler -->
 				<dependency>
@@ -121,7 +127,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>TimeTracker</finalName>
+		<finalName>TimeTrackerWeb</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>

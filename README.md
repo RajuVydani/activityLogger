@@ -8,3 +8,5 @@ Technologies:
 	Maven v3
 
 REstful Services/Exception Handling
+Annotations are used to Configure spring MVC Controllers
+HTML5 is used for form validations.
