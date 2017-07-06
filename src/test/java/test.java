@@ -4,11 +4,17 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.automation.dao.AgentDAO;
+import com.automation.scheduler.SchedulerJob;
+
 public class test {
 
 	public static void main(String[] argv) throws ParseException {
-
-		String test="2017-6-21 16:12:16@@2017-6-21 16:13:46@@onecognizant.cognizant.com,google.co.in@@1.5";
+		
+		/*String test="2017-6-21 16:12:16@@2017-6-21 16:13:46@@onecognizant.cognizant.com,google.co.in@@1.5";
 		String splitfeilds[]=test.split("@@");
 		for(int i=0;i<splitfeilds.length;i++)
 		{
@@ -29,13 +35,9 @@ public class test {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 	 
-		System.out.println( sdf.format(calendar.getTime()));
- 
+		System.out.println( sdf.format(calendar.getTime()));*/
+		//Convert Date to Calendar
 
 	}
-
-	//Convert Date to Calendar
- 
- 
 }
  

@@ -1,9 +1,9 @@
 TimeTracker Web Application !!!
 
 Technologies:	
-	Java8
-	Spring MVC
-	REstful Webservices - Jersey Implementation
+	Java v8
+	Spring MVC 3.0.5
+	REstful Webservices - Jersey Implementation v1.8
 	Apache Tomcat v8.5
 	Maven v3
 

@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.dao.DataAccessException;
@@ -19,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 import com.automation.idao.IAgentDAO;
+import com.automation.scheduler.SchedulerJob;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
 import org.springframework.dao.DataAccessException;
@@ -27,6 +29,8 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class AgentDAO implements IAgentDAO {
+	
+	private final static Logger logger = Logger.getLogger(AgentDAO.class);
 
 	private JdbcTemplate jdbcTemplate;
 
