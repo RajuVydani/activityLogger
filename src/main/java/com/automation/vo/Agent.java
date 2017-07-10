@@ -16,6 +16,15 @@ public class Agent {
 	private String ErrorDesc;
 	private String recordedTime;
 	private String idleTimings;
+	private int idleInterval;
+	public int getIdleInterval() {
+		return idleInterval;
+	}
+
+	public void setIdleInterval(int idleInterval) {
+		this.idleInterval = idleInterval;
+	}
+
 	public String getIdleTimings() {
 		return idleTimings;
 	}

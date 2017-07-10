@@ -77,7 +77,12 @@ public class ConnectionTest {
 						dataInsert.setName(agentName);
 						dataInsert.setLoginTime(e.getLoginTime());
 						dataInsert.setLogoutTime(e.getLogoutTime());
-						dataInsert.setProductiveHours(e.getProductiveHours());
+						
+						String seconds=e.getProductiveHours();
+						float minutes=(Float.parseFloat(seconds)/60);
+						float hours = (minutes / 60);					 
+						
+						dataInsert.setProductiveHours( String.valueOf(hours));
 
 						int status = dao.dataInsertionInDayMaster(dataInsert);
 						if (status >= 0) {
@@ -139,7 +144,13 @@ public class ConnectionTest {
 					dataInsert.setName(e.getName());
 					dataInsert.setLoginTime(e.getLoginTime());
 					dataInsert.setLogoutTime(e.getLogoutTime());
-					dataInsert.setProductiveHours(e.getProductiveHours());
+
+					String seconds=e.getProductiveHours();
+					float minutes=(Float.parseFloat(seconds)/60);
+					float hours = (minutes / 60);					 
+					
+					dataInsert.setProductiveHours( String.valueOf(hours));
+				
 
 					dataInsert.setErrorDesc("Email Id is missing in Agent Master");
 					int status = dao.dataInsertionInException(dataInsert);

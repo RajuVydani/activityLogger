@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.dao.DataAccessException;
@@ -20,7 +19,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 import com.automation.idao.IAgentDAO;
-import com.automation.scheduler.SchedulerJob;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
 import org.springframework.dao.DataAccessException;
@@ -29,8 +27,6 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class AgentDAO implements IAgentDAO {
-	
-	private final static Logger logger = Logger.getLogger(AgentDAO.class);
 
 	private JdbcTemplate jdbcTemplate;
 
@@ -146,6 +142,52 @@ public class AgentDAO implements IAgentDAO {
 		return jdbcTemplate.update(query);
 	}
 
+	
+	
+	
+	public List<Agent> CheckLoginEntry(Agent e) {
+		return jdbcTemplate.query(
+				"SELECT LOGIN_TIME,PRODUCTIVITY_HRS FROM chrome_temp_master WHERE EMAIL_ID='" + e.getEmailId() + "' AND TIMESTAMPDIFF(MINUTE,LOGOUT_TIME,'"+e.getLoginTime()+"') <= 240 && TIMESTAMPDIFF(MINUTE,LOGOUT_TIME,'"+e.getLoginTime()+"') >= 0",
+				new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+						
+						String seconds=rs.getString(2);
+						 			 
+						
+						e.setProductiveHours(String.valueOf(seconds));
+						e.setLoginTime(rs.getString(1));
+
+						return e;
+					}
+				});
+	}
+	
+	public List<Agent> CheckInChromeMaster(String emailId, String loginTime) {
+		return jdbcTemplate.query(
+				"SELECT LOGIN_TIME,PRODUCTIVITY_HRS FROM CHROME_TEMP_MASTER WHERE EMAIL_ID='" + emailId + "' AND LOGIN_TIME='"+loginTime+"'",
+				new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+						
+						String seconds=rs.getString(2);
+						 			 
+						
+						e.setProductiveHours(String.valueOf(seconds));
+					
+
+						return e;
+					}
+				});
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	//////////////// Data Insertion In Day Detail Table//////////////
 	public int dataInsertionInDayDetail(Agent e) {
 		String query = "INSERT INTO DAY_DETAIL (`EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`)"
@@ -253,5 +295,27 @@ public class AgentDAO implements IAgentDAO {
 				+ "'" + e.getEmailId() + "','" + e.getName() + "','" + e.getIdleFrom() + "','" + e.getIdleTo() + "','"
 				+ e.getWebsitesVisited() + "')";
 		return jdbcTemplate.update(query);
+	}
+	
+	
+	
+	public int idleInterval() {
+		String sql = "select IFNULL(INTERVAL_SECS,0)  from CHROME_IDLE_INTERVAL";
+
+		return jdbcTemplate.queryForInt(sql);
+	}
+	public List<Agent> FetchAgentsUnderManager(String managerName) {
+		return jdbcTemplate.query(
+				"SELECT EMAIL_ID FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName + "'",
+				new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+						
+						e.setEmailId(rs.getString(1));
+					
+
+						return e;
+					}
+				});
 	}
 }

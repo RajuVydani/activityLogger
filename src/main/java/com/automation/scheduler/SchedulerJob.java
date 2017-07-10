@@ -18,20 +18,21 @@ public class SchedulerJob implements Job {
 
 	private final static Logger logger = Logger.getLogger(SchedulerJob.class);
 
-	/*static {
+	static {
 		init();
 	}
 
-	*//**
+	/**
 	 * method to init log4j configurations
-	 *//*
+	 */
 	private static void init() {
 		DOMConfigurator.configure("log4j.xml");
-	}*/
+	}
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		logger.info("Quartz 2 example");
 		scheduler();
+
 	}
 
 	public void scheduler() {
@@ -41,14 +42,14 @@ public class SchedulerJob implements Job {
 		try {
 
 			System.out.println("Reading Temporary Table");
-			AgentDAO agentDAO = (AgentDAO) context.getBean("agentDAO");
+			AgentDAO dao = (AgentDAO) context.getBean("agentDAO");
 			///////////////////////// READING CHROME TEMPORARY
 			///////////////////////// TABLE///////////////////
-			List<Agent> chromtemlist = agentDAO.readChromTempMasterTable();
+			List<Agent> chromtemlist = dao.readChromTempMasterTable();
 
 			for (Agent e : chromtemlist) {
 
-				List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(e.getEmailId());
+				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId());
 				String agentName = "";
 				String ShiftTimings = "";
 				for (Agent e1 : agentdetails) {
@@ -76,7 +77,7 @@ public class SchedulerJob implements Job {
 				if (errorDesc.trim().equalsIgnoreCase("")) {
 
 					String LoginDate[] = e.getLoginTime().split(" ");
-					int count = agentDAO.totalAgentCountInDayMaster(e.getEmailId(), LoginDate[0]);
+					int count = dao.totalAgentCountInDayMaster(e.getEmailId(), LoginDate[0]);
 					System.out.println("count quwery====" + count);
 					if (count == 0) {
 
@@ -87,27 +88,32 @@ public class SchedulerJob implements Job {
 						dataInsert.setName(agentName);
 						dataInsert.setLoginTime(e.getLoginTime());
 						dataInsert.setLogoutTime(e.getLogoutTime());
-						dataInsert.setProductiveHours(e.getProductiveHours());
+						
+						String seconds=e.getProductiveHours();
+						float minutes=(Float.parseFloat(seconds)/60);
+						float hours = (minutes / 60);					 
+						
+						dataInsert.setProductiveHours( String.valueOf(hours));
 
-						int status = agentDAO.dataInsertionInDayMaster(dataInsert);
+						int status = dao.dataInsertionInDayMaster(dataInsert);
 						if (status >= 0) {
 							Agent dataDelete = new Agent();
 							dataDelete.setEmailId(e.getEmailId());
 							dataDelete.setLoginTime(e.getLoginTime());
 
-							int deleteStatus = agentDAO.deleteFromChromeTempMaster(dataDelete);
+							int deleteStatus = dao.deleteFromChromeTempMaster(dataDelete);
 							if (deleteStatus >= 0) {
 
 								Agent dataInsertInDayDetail = new Agent();
 								dataInsertInDayDetail.setEmailId(e.getEmailId());
 								dataInsertInDayDetail.setLogoutTime(e.getLogoutTime());
 
-								int dataInsertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
+								int dataInsertInDayDetailStatus = dao.dataInsertionInDayDetail(dataInsertInDayDetail);
 								if (dataInsertInDayDetailStatus >= 0) {
 
 									Agent dataDeletefromChromTempDetails = new Agent();
 
-									int dataDeletionInDayDetailStatus = agentDAO
+									int dataDeletionInDayDetailStatus = dao
 											.deleteFromChromeTempDetail(dataInsertInDayDetail);
 									if (dataDeletionInDayDetailStatus >= 0) {
 
@@ -115,14 +121,14 @@ public class SchedulerJob implements Job {
 										idleHrsCalculation.setEmailId(e.getEmailId());
 										idleHrsCalculation.setLogoutTime(e.getLogoutTime());
 										idleHrsCalculation.setLoginTime(e.getLoginTime());
-										List<Agent> idlehrslist = agentDAO.CalculateIdleHrs(idleHrsCalculation);
+										List<Agent> idlehrslist = dao.CalculateIdleHrs(idleHrsCalculation);
 										for (Agent i1 : idlehrslist) {
 											Agent idleHrsUpdation = new Agent();
 											idleHrsUpdation.setEmailId(e.getEmailId());
 											idleHrsUpdation.setDATE(LoginDate[0]);
 											idleHrsUpdation.setIdleHours(i1.getIdleHours());
 
-											int idleHrsUpdationInDayMaster = agentDAO
+											int idleHrsUpdationInDayMaster = dao
 													.updateIdleHrsInDayMaster(idleHrsUpdation);
 											if (idleHrsUpdationInDayMaster >= 0) {
 
@@ -149,10 +155,16 @@ public class SchedulerJob implements Job {
 					dataInsert.setName(e.getName());
 					dataInsert.setLoginTime(e.getLoginTime());
 					dataInsert.setLogoutTime(e.getLogoutTime());
-					dataInsert.setProductiveHours(e.getProductiveHours());
+
+					String seconds=e.getProductiveHours();
+					float minutes=(Float.parseFloat(seconds)/60);
+					float hours = (minutes / 60);					 
+					
+					dataInsert.setProductiveHours( String.valueOf(hours));
+				
 
 					dataInsert.setErrorDesc("Email Id is missing in Agent Master");
-					int status = agentDAO.dataInsertionInException(dataInsert);
+					int status = dao.dataInsertionInException(dataInsert);
 
 					System.out.println("status===" + status);
 
@@ -161,16 +173,16 @@ public class SchedulerJob implements Job {
 						dataDelete.setEmailId(e.getEmailId());
 						dataDelete.setLoginTime(e.getLoginTime());
 
-						int deleteStatus = agentDAO.deleteFromChromeTempMaster(dataDelete);
+						int deleteStatus = dao.deleteFromChromeTempMaster(dataDelete);
 						if (deleteStatus >= 0) {
 
 							Agent dataInsertInDayDetail = new Agent();
 							dataInsertInDayDetail.setEmailId(e.getEmailId());
 							dataInsertInDayDetail.setLogoutTime(e.getLogoutTime());
 
-							int dataInsertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
+							int dataInsertInDayDetailStatus = dao.dataInsertionInDayDetail(dataInsertInDayDetail);
 							if (dataInsertInDayDetailStatus >= 0) {
-								int dataDeletionInDayDetailStatus = agentDAO
+								int dataDeletionInDayDetailStatus = dao
 										.deleteFromChromeTempDetail(dataInsertInDayDetail);
 								if (dataDeletionInDayDetailStatus >= 0) {
 
@@ -186,11 +198,11 @@ public class SchedulerJob implements Job {
 			///////////////////////// READING CHROME EXCEPTION
 			///////////////////////// TABLE///////////////////
 
-			List<Agent> chromExceplist = agentDAO.readChromExceptionTable();
+			List<Agent> chromExceplist = dao.readChromExceptionTable();
 
 			for (Agent e : chromExceplist) {
 
-				List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(e.getEmailId());
+				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId());
 				String agentName = "";
 				String ShiftTimings = "";
 				for (Agent e1 : agentdetails) {
@@ -218,7 +230,7 @@ public class SchedulerJob implements Job {
 				if (errorDesc.trim().equalsIgnoreCase("")) {
 
 					String LoginDate[] = e.getLoginTime().split(" ");
-					int count = agentDAO.totalAgentCountInDayMaster(e.getEmailId(), LoginDate[0]);
+					int count = dao.totalAgentCountInDayMaster(e.getEmailId(), LoginDate[0]);
 					System.out.println("count quwery====" + count);
 					if (count == 0) {
 
@@ -231,13 +243,13 @@ public class SchedulerJob implements Job {
 						dataInsert.setLogoutTime(e.getLogoutTime());
 						dataInsert.setProductiveHours(e.getProductiveHours());
 
-						int status = agentDAO.dataInsertionInDayMaster(dataInsert);
+						int status = dao.dataInsertionInDayMaster(dataInsert);
 						if (status >= 0) {
 							Agent dataDelete = new Agent();
 							dataDelete.setEmailId(e.getEmailId());
 							dataDelete.setLoginTime(e.getLoginTime());
 
-							int deleteStatus = agentDAO.deleteFromChromeException(dataDelete);
+							int deleteStatus = dao.deleteFromChromeException(dataDelete);
 							if (deleteStatus >= 0) {
 
 								Agent dataInsertInDayDetail = new Agent();
@@ -248,14 +260,14 @@ public class SchedulerJob implements Job {
 								idleHrsCalculation.setEmailId(e.getEmailId());
 								idleHrsCalculation.setLogoutTime(e.getLogoutTime());
 								idleHrsCalculation.setLoginTime(e.getLoginTime());
-								List<Agent> idlehrslist = agentDAO.CalculateIdleHrs(idleHrsCalculation);
+								List<Agent> idlehrslist = dao.CalculateIdleHrs(idleHrsCalculation);
 								for (Agent i1 : idlehrslist) {
 									Agent idleHrsUpdation = new Agent();
 									idleHrsUpdation.setEmailId(e.getEmailId());
 									idleHrsUpdation.setDATE(LoginDate[0]);
 									idleHrsUpdation.setIdleHours(i1.getIdleHours());
 
-									int idleHrsUpdationInDayMaster = agentDAO.updateIdleHrsInDayMaster(idleHrsUpdation);
+									int idleHrsUpdationInDayMaster = dao.updateIdleHrsInDayMaster(idleHrsUpdation);
 									if (idleHrsUpdationInDayMaster == 1) {
 
 									}
@@ -278,6 +290,5 @@ public class SchedulerJob implements Job {
 			System.out.println("Exception" + e);
 			e.printStackTrace();
 		}
-
 	}
 }

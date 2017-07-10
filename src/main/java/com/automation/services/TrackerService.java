@@ -1,5 +1,7 @@
 package com.automation.services;
 
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -50,7 +52,7 @@ public class TrackerService {
 		agent.setName("Raju");
 		agent.setEmailId("raju@gmail.com");
 
-		return Response.status(200).entity(agent).build();
+		return Response.status(200).entity("success").build();
 	}
 
 	@POST
@@ -62,6 +64,7 @@ public class TrackerService {
 		System.out.println(jsonagent.getName());
 		String jsonagentName=jsonagent.getName();
 		String serviceStatus = "failure";
+		Agent responseagent=new Agent();
 		try {
 	
 		String serviceName = jsonagent.getServicename();
@@ -102,28 +105,98 @@ public class TrackerService {
 			// throw new NullPointerException();
 			// }
 			ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
-	
+			   String responseLoginTime="";
+			   int responseUpdateSeconds=0;
 			if (serviceName.trim().equalsIgnoreCase("storeagentdata")) {
+				
 				AgentDAO dao = (AgentDAO) context.getBean("agentDAO");
 				Agent agent = new Agent();
+				//remove white space from email id
+				agentEmailId=agentEmailId.replaceAll("\\s+","");
 				agent.setEmailId(agentEmailId);
 				agent.setName(agentName);
 				String seconds = productivityHours;
-				float minutes = (Float.parseFloat(seconds) / 60);
-				float hours = (minutes / 60);
-				agent.setProductiveHours(String.valueOf(hours));
+			  
+				agent.setProductiveHours(String.valueOf(seconds));
 				agent.setLoginTime(loginTime);
 				agent.setLogoutTime(logoutTime);
-				int count = dao.totalAgentCountInChromeMater(agentEmailId, loginTime);
-				int status;
+				
+				List<Agent> chromemasterlist=	 dao.CheckInChromeMaster(agentEmailId, loginTime);
+			 
+			 String prodHrsChromeMaster="";
+			 int count=0;
+				for (Agent e : chromemasterlist) {
+					prodHrsChromeMaster=e.getProductiveHours();
+					
+					count=1;	
+				}
+			 
+			
 				if (count == 0) {
-					status = dao.dataInsertionInChromeMater(agent);
+ 
+			
+					
+					Agent agentdet = new Agent();
+					agentdet.setEmailId(agentEmailId);
+					agentdet.setLoginTime(loginTime);
+					List<Agent> chromtemlist = dao.CheckLoginEntry(agentdet);
+                    String exist="";
+					for (Agent e : chromtemlist) {
+						responseLoginTime=e.getLoginTime();
+						exist="yes";
+						Agent updateagent = new Agent();
+						updateagent.setEmailId(agentEmailId);
+						updateagent.setName(agentName);
+						String updateseconds = productivityHours;
+						int totalseconds = ((Integer.parseInt(updateseconds) + Integer.parseInt(e.getProductiveHours())));
+						System.out.println("updateseconds1"+updateseconds);
+						System.out.println("updatesecond2"+e.getProductiveHours());
+						System.out.println("updatesecond3"+totalseconds);
+						updateagent.setProductiveHours(String.valueOf(totalseconds));
+						updateagent.setLoginTime(e.getLoginTime());
+						updateagent.setLogoutTime(logoutTime);
+						responseagent.setLoginTime(responseLoginTime);
+					 dao.dataUpdateInChromeMater(updateagent);
+					}
+if(!exist.trim().equalsIgnoreCase("yes"))
+{
+	responseLoginTime=loginTime;
+	responseagent.setLoginTime(responseLoginTime);
+					  dao.dataInsertionInChromeMater(agent);
+					
+}
+ 
+
+					
+					
+					
+					
 				} else {
-
-					status = dao.dataUpdateInChromeMater(agent);
+					
+					Agent updateagent = new Agent();
+					updateagent.setEmailId(agentEmailId);
+					updateagent.setName(agentName);
+					String updateseconds = prodHrsChromeMaster;
+					int totalseconds = ((Integer.parseInt(updateseconds) + Integer.parseInt(productivityHours)));
+					System.out.println("updateseconds4"+updateseconds);
+					System.out.println("updatesecond5"+productivityHours);
+					System.out.println("updatesecond6"+totalseconds);					
+					updateagent.setProductiveHours(String.valueOf(totalseconds));
+					updateagent.setLoginTime(loginTime);
+					updateagent.setLogoutTime(logoutTime);
+				 dao.dataUpdateInChromeMater(updateagent);
+				 responseLoginTime=loginTime;
+				 responseagent.setLoginTime(responseLoginTime);
 				}
-
-				if (status >= 0) {
+				
+				
+				
+				
+				
+				
+				
+				
+		 
 
 					if (!idleTimings.trim().equalsIgnoreCase("")) {
 						System.out.println("idle==============" + idleTimings);
@@ -165,73 +238,18 @@ public class TrackerService {
 
 						}
 					}
-				}
+		
 				serviceStatus = "success";
+				
+				
+				responseUpdateSeconds=dao.idleInterval();
+				responseagent.setIdleInterval(responseUpdateSeconds);
+				
+				
 			}
 
-			if (serviceName.trim().equalsIgnoreCase("storeagentidledata")) {
-				AgentDAO dao = (AgentDAO) context.getBean("agentDAO");
-				Agent agent = new Agent();
-				agent.setEmailId(agentEmailId);
-				agent.setName(agentName);
-				String seconds = productivityHours;
-				float minutes = (Float.parseFloat(seconds) / 60);
-				agent.setProductiveHours(String.valueOf(minutes));
-				agent.setLoginTime(loginTime);
-				agent.setLogoutTime(logoutTime);
-				int count = dao.totalAgentCountInChromeMater(agentEmailId, loginTime);
-				int status = 0;
-				if (count == 1) {
-					status = dao.dataUpdateInChromeMater(agent);
-				}
 
-				if (status == 1) {
-
-					if (!idleTimings.trim().equalsIgnoreCase("")) {
-						System.out.println("idle==============" + idleTimings);
-						String splitline[] = idleTimings.split("&&");
-						System.out.println("length of idle==============" + splitline.length);
-						for (int i = 0; i < splitline.length; i++) {
-							System.out.println(splitline[i] + "==============" + i);
-							String splitfeilds[] = splitline[i].split("@@");
-							System.out.println(splitfeilds.length + "-length===");
-							String fromTime = splitfeilds[0];
-							String toTime = splitfeilds[1];
-							String websitesVisited = splitfeilds[2];
-							String webistedvisited_updated = "";
-							String websitevistedsplit[] = websitesVisited.split(",");
-							for (int j = 0; j < websitevistedsplit.length; j++) {
-								if (!websitevistedsplit[j].trim().equalsIgnoreCase("")) {
-									if (webistedvisited_updated.trim().equalsIgnoreCase("")) {
-
-										webistedvisited_updated = websitevistedsplit[j].trim();
-									} else {
-
-										webistedvisited_updated = webistedvisited_updated + ","
-												+ websitevistedsplit[j].trim();
-									}
-
-								}
-							}
-
-							Agent updateagent = new Agent();
-							updateagent.setEmailId(agentEmailId);
-							updateagent.setName(agentName);
-							updateagent.setIdleFrom(fromTime);
-							updateagent.setIdleTo(toTime);
-							updateagent.setWebsitesVisited(webistedvisited_updated);
-							int updateStatus = dao.dataInsertionInChromeDetails(updateagent);
-							if (updateStatus >= 0) {
-
-							}
-
-						}
-					}
-				}
-				serviceStatus = "success";
-			}
-
-			return Response.status(200).entity(agentName + " Stored " + serviceStatus).build();
+			return Response.status(200).entity(responseagent).build();
 		} catch (Exception e) {
 			e.printStackTrace();
 			try {
@@ -242,7 +260,7 @@ public class TrackerService {
 			}
 		}
 
-		return Response.status(200).entity(jsonagentName + " Stored " + serviceStatus).build();
+		return Response.status(300).entity("failure").build();
 	}
 
 	 
