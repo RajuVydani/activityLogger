@@ -49,7 +49,7 @@ public class SchedulerJob implements Job {
 
 			for (Agent e : chromtemlist) {
 
-				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId());
+				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""));
 				String agentName = "";
 				String ShiftTimings = "";
 				for (Agent e1 : agentdetails) {
@@ -202,7 +202,7 @@ public class SchedulerJob implements Job {
 
 			for (Agent e : chromExceplist) {
 
-				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId());
+				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""));
 				String agentName = "";
 				String ShiftTimings = "";
 				for (Agent e1 : agentdetails) {
