@@ -18,16 +18,16 @@ public class SchedulerJob implements Job {
 
 	private final static Logger logger = Logger.getLogger(SchedulerJob.class);
 
-	static {
+	/*static {
 		init();
 	}
 
-	/**
+	*//**
 	 * method to init log4j configurations
-	 */
+	 *//*
 	private static void init() {
 		DOMConfigurator.configure("log4j.xml");
-	}
+	}*/
 
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		logger.info("Quartz 2 example");
