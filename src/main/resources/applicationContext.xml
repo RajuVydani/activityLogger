@@ -39,6 +39,49 @@
 		<property name="agentDAO" ref="agentDAO" />
 		<property name="policyDAO" ref="policyDAO" />
 	</bean>
+	
  
+	
+	<bean id="schedulerTask" class="com.automation.scheduler.SchedulerTask" />
+
+	<!-- Spring Quartz -->
+	<bean name="schedulerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+
+		<property name="jobClass" value="com.automation.scheduler.SchedulerJob" />
+
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="schedulerTask" value-ref="schedulerTask" />
+			</map>
+		</property>
+
+	</bean>
+
+	<!-- <bean id="schedulerJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+		<property name="targetObject" ref="SchedulerTask" /> <property name="targetMethod" 
+		value="printMe" /> </bean> -->
+
  
+
+	<!-- Cron Trigger, run every 5 seconds -->
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+
+		<property name="jobDetail" ref="schedulerJob" />
+		<property name="cronExpression"  value="0 8 20 * * ?" />
+
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="jobDetails">
+			<list>
+				<ref bean="schedulerJob" />
+			</list>
+		</property>
+
+		<property name="triggers">
+			<list>
+				<ref bean="cronTrigger" />
+			</list>
+		</property>
+	</bean>
 </beans>
