@@ -31,9 +31,14 @@
 	<bean id="agentDAO" class="com.automation.dao.AgentDAO">
 		<property name="jdbcTemplate" ref="jdbcTemplate" />
 	</bean>
+	<bean id="policyDAO" class="com.automation.dao.PolicyDAO">
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
+	</bean>
 	
 	<bean id="trackerService" class="com.automation.services.TrackerService">
 		<property name="agentDAO" ref="agentDAO" />
+		<property name="policyDAO" ref="policyDAO" />
 	</bean>
-	
+ 
+ 
 </beans>

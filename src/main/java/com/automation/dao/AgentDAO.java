@@ -21,19 +21,27 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import com.automation.idao.IAgentDAO;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
+import com.sun.istack.internal.logging.Logger;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 
 public class AgentDAO implements IAgentDAO {
-
+	private final static Logger logger = Logger.getLogger(AgentDAO.class);
 	private JdbcTemplate jdbcTemplate;
 
 	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#getAgentData(com.automation.vo.Agent)
+	 * This method will fetch Agent Information from Agent Master
+	 */
 	public String getAgentData(Agent agent) throws Exception {
 		System.out.println(AppConstants.CLASS + "-AgentDAO ::" + AppConstants.METHOD + "-storeAgentData()");
 
@@ -61,10 +69,15 @@ public class AgentDAO implements IAgentDAO {
 		});
 		return "Successfully";
 	}
-	////////////////////////////////////
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#readChromTempMasterTable() This method
+	 * will read Chrome Temp Master.
+	 */
 	public List<Agent> readChromTempMasterTable() {
-
+		logger.info("inside readChromTempMasterTable()");
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DATE, -1);
@@ -86,8 +99,14 @@ public class AgentDAO implements IAgentDAO {
 		});
 	}
 
-	//////////////// Read Data From Chrom Temporary Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#readChromTempTable() This method will
+	 * read Chrome Temp Details.
+	 */
 	public List<Agent> readChromTempTable() {
+		logger.info("inside readChromTempTable()");
 		return jdbcTemplate.query("select * from CHROME_TEMP_DETAILS", new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 				Agent e = new Agent();
@@ -102,9 +121,14 @@ public class AgentDAO implements IAgentDAO {
 		});
 	}
 
-	//////////////// Read Data From Chrome Exception Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#readChromExceptionTable() This method
+	 * will read Chrome Exception Table.
+	 */
 	public List<Agent> readChromExceptionTable() {
-
+		logger.info("inside readChromExceptionTable()");
 		return jdbcTemplate.query(
 				"select EMAIL_ID,AGENT_NAME,PRODUCTIVITY_HRS,LOGIN_TIME,LOGOUT_TIME  from CHROME_EXCEPTION_DETAILS",
 				new RowMapper<Agent>() {
@@ -121,8 +145,15 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
-	//////////////// Read Data From Agent Master Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#readAgentDetailsFromAgentMaster(java.lang.
+	 * String) This method will fetch Agent Information from Agent Master
+	 */
 	public List<Agent> readAgentDetailsFromAgentMaster(String emailId) {
+		logger.info("inside readAgentDetailsFromAgentMaster()");
 		return jdbcTemplate.query("select AGENT_NAME,SHIFT_TIMINGS from AGENT_MASTER WHERE EMAIL_ID='" + emailId + "'",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
@@ -134,27 +165,40 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
-	//////////////// Data Insertion In Day Master Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataInsertionInDayMaster(com.automation.vo.
+	 * Agent) This method will insert data in Day Master
+	 */
 	public int dataInsertionInDayMaster(Agent e) {
+		logger.info("inside dataInsertionInDayMaster()");
 		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS` ) values('"
 				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"
 				+ e.getLoginTime() + "','" + e.getLogoutTime() + "'," + e.getProductiveHours() + ")";
 		return jdbcTemplate.update(query);
 	}
 
-	
-	
-	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#CheckLoginEntry(com.automation.vo.Agent)
+	 * This method will check whether agent Logged in already for the day.
+	 */
 	public List<Agent> CheckLoginEntry(Agent e) {
+		logger.info("inside CheckLoginEntry()");
 		return jdbcTemplate.query(
-				"SELECT LOGIN_TIME,PRODUCTIVITY_HRS FROM chrome_temp_master WHERE EMAIL_ID='" + e.getEmailId() + "' AND TIMESTAMPDIFF(MINUTE,LOGOUT_TIME,'"+e.getLoginTime()+"') <= 240 && TIMESTAMPDIFF(MINUTE,LOGOUT_TIME,'"+e.getLoginTime()+"') >= 0",
+				"SELECT LOGIN_TIME,PRODUCTIVITY_HRS FROM chrome_temp_master WHERE EMAIL_ID='" + e.getEmailId()
+						+ "' AND TIMESTAMPDIFF(MINUTE,LOGOUT_TIME,'" + e.getLoginTime()
+						+ "') <= 240 && TIMESTAMPDIFF(MINUTE,LOGOUT_TIME,'" + e.getLoginTime() + "') >= 0",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
-						
-						String seconds=rs.getString(2);
-						 			 
-						
+
+						String seconds = rs.getString(2);
+
 						e.setProductiveHours(String.valueOf(seconds));
 						e.setLoginTime(rs.getString(1));
 
@@ -162,34 +206,39 @@ public class AgentDAO implements IAgentDAO {
 					}
 				});
 	}
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#CheckInChromeMaster(java.lang.String,
+	 * java.lang.String) This method will fetch Login Time and Prod Hrs from
+	 * Chrome Temp Master
+	 */
 	public List<Agent> CheckInChromeMaster(String emailId, String loginTime) {
-		return jdbcTemplate.query(
-				"SELECT LOGIN_TIME,PRODUCTIVITY_HRS FROM CHROME_TEMP_MASTER WHERE EMAIL_ID='" + emailId + "' AND LOGIN_TIME='"+loginTime+"'",
-				new RowMapper<Agent>() {
+		logger.info("inside CheckInChromeMaster()");
+		return jdbcTemplate.query("SELECT LOGIN_TIME,PRODUCTIVITY_HRS FROM CHROME_TEMP_MASTER WHERE EMAIL_ID='"
+				+ emailId + "' AND LOGIN_TIME='" + loginTime + "'", new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
-						
-						String seconds=rs.getString(2);
-						 			 
-						
+
+						String seconds = rs.getString(2);
+
 						e.setProductiveHours(String.valueOf(seconds));
-					
 
 						return e;
 					}
 				});
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	//////////////// Data Insertion In Day Detail Table//////////////
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataInsertionInDayDetail(com.automation.vo.
+	 * Agent) This method will insert data in to Day Detail.
+	 */
 	public int dataInsertionInDayDetail(Agent e) {
+		logger.info("inside dataInsertionInDayDetail()");
 		String query = "INSERT INTO DAY_DETAIL (`EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`)"
 				+ "SELECT `EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`" + "FROM CHROME_TEMP_DETAILS "
 				+ "WHERE EMAIL_ID='" + e.getEmailId() + "' AND TO_TIME <= '" + e.getLogoutTime() + "'";
@@ -197,92 +246,161 @@ public class AgentDAO implements IAgentDAO {
 		return jdbcTemplate.update(query);
 	}
 
-	//////////////// Check Agent Present in Agent Master Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#totalAgentCountInDayMaster(java.lang.
+	 * String, java.lang.String) This method will check Agent Already present in
+	 * agent master.
+	 */
 	public int totalAgentCountInDayMaster(String emailId, String Date) {
+		logger.info("inside totalAgentCountInDayMaster()");
 		String sql = "select count(*) from DAY_MASTER WHERE EMAIL_ID='" + emailId + "' AND date='" + Date + "'";
 
 		return jdbcTemplate.queryForInt(sql);
 	}
 
-	//////////////// Data Deletion in Chrome Temporary Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#deleteFromChromeTempDetail(com.automation.
+	 * vo.Agent) This method will delete dayta from Chrome Temp Detail.
+	 */
 	public int deleteFromChromeTempDetail(Agent e) {
+		logger.info("inside deleteFromChromeTempDetail()");
 		String query = "DELETE FROM CHROME_TEMP_DETAILS " + "WHERE EMAIL_ID='" + e.getEmailId() + "' AND TO_TIME <= ('"
 				+ e.getLogoutTime() + "' + INTERVAL 1 HOUR)";
 		return jdbcTemplate.update(query);
 	}
-	////
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#deleteFromChromeTempMaster(com.automation.
+	 * vo.Agent) This method will delete data from Chrome Temp Master.
+	 */
 	public int deleteFromChromeTempMaster(Agent e) {
+		logger.info("inside deleteFromChromeTempMaster()");
 		String query = "DELETE FROM CHROME_TEMP_MASTER WHERE EMAIL_ID='" + e.getEmailId() + "' AND LOGIN_TIME='"
 				+ e.getLoginTime() + "'";
 
 		return jdbcTemplate.update(query);
 	}
 
-	//////////////// Data Insertion in Chrome Exception Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataInsertionInException(com.automation.vo.
+	 * Agent) This method will insert data in Chrome Exception Table.
+	 */
 	public int dataInsertionInException(Agent e) {
+		logger.info("inside dataInsertionInException()");
 		String query = "insert into CHROME_EXCEPTION_DETAILS( `EMAIL_ID`, `AGENT_NAME`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS`,`ERROR_DESC` ) values("
 				+ "'" + e.getEmailId() + "','" + e.getName() + "','" + e.getLoginTime() + "','" + e.getLogoutTime()
 				+ "'," + e.getProductiveHours() + ",'" + e.getErrorDesc() + "')";
 		return jdbcTemplate.update(query);
 	}
 
-	//////////////// Data Deletion in Chrome Exception Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#deleteFromChromeException(com.automation.vo
+	 * .Agent) This method will delete data from Chrome Exception Table.
+	 */
 	public int deleteFromChromeException(Agent e) {
+		logger.info("inside deleteFromChromeException()");
 
 		String query = "DELETE FROM CHROME_EXCEPTION_DETAILS WHERE EMAIL_ID='" + e.getEmailId() + "' AND LOGIN_TIME='"
 				+ e.getLoginTime() + "'";
 		return jdbcTemplate.update(query);
 	}
 
-	////////////////////////////// Idle Hrs Calculation//////////////
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#CalculateIdleHrs(com.automation.vo.Agent)
+	 * This method will calculate Idle Hours.
+	 */
 	public List<Agent> CalculateIdleHrs(Agent e) {
+		logger.info("inside CalculateIdleHrs()");
 		return jdbcTemplate.query(
 				"SELECT sum(TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME)) FROM DAY_DETAIL WHERE EMAIL_ID='" + e.getEmailId()
 						+ "' AND FROM_TIME >='" + e.getLoginTime() + "' AND FROM_TIME <='" + e.getLogoutTime() + "'",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
-						
-						String seconds=rs.getString(1);
-						float minutes=(Float.parseFloat(seconds)/60);
-						float hours = (minutes / 60);					 
-						
-						e.setIdleHours( String.valueOf(hours));
+
+						String seconds = rs.getString(1);
+						float minutes = (Float.parseFloat(seconds) / 60);
+						float hours = (minutes / 60);
+
+						e.setIdleHours(String.valueOf(hours));
 
 						return e;
 					}
 				});
 	}
 
-	//////////////////////////////// Idle Hrs Updation////////////////////
-
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#updateIdleHrsInDayMaster(com.automation.vo.
+	 * Agent) This method will update the Idle Hrs.
+	 */
 	public int updateIdleHrsInDayMaster(Agent e) {
+		logger.info("inside updateIdleHrsInDayMaster()");
 		String query = "UPDATE DAY_MASTER SET IDLE_HRS=" + e.getIdleHours() + " WHERE EMAIL_ID='" + e.getEmailId()
 				+ "' AND DATE='" + e.getDATE() + "'";
 
 		return jdbcTemplate.update(query);
 	}
-	//////////////////////////////////////////// REST CALL FOR UPDATING
-	//////////////////////////////////////////// PRODUCTIVITY HOURS//////
 
-	//////////////// Check Agent Present in Agent Master Table//////////////
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#totalAgentCountInChromeMater(java.lang.
+	 * String, java.lang.String) This method will check agent login Time present
+	 * in CHROME TEMP master
+	 */
 	public int totalAgentCountInChromeMater(String emailId, String logindate) {
+		logger.info("inside totalAgentCountInChromeMater()");
 		String sql = "select count(*) from CHROME_TEMP_MASTER WHERE EMAIL_ID='" + emailId + "' AND LOGIN_TIME='"
 				+ logindate + "'";
 
 		return jdbcTemplate.queryForInt(sql);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataInsertionInChromeMater(com.automation.
+	 * vo.Agent) This method will insert data in Chrome Temp Master
+	 */
 	public int dataInsertionInChromeMater(Agent e) {
+		logger.info("inside dataInsertionInChromeMater()");
 		String query = "insert into CHROME_TEMP_MASTER( `EMAIL_ID`, `AGENT_NAME`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS` ) values("
 				+ "'" + e.getEmailId() + "','" + e.getName() + "','" + e.getLoginTime() + "','" + e.getLogoutTime()
 				+ "'," + e.getProductiveHours() + ")";
 		return jdbcTemplate.update(query);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataUpdateInChromeMater(com.automation.vo.
+	 * Agent) This method will update data in Chrome Temp Master
+	 */
 	public int dataUpdateInChromeMater(Agent e) {
+		logger.info("inside dataUpdateInChromeMater()");
 		String query = "UPDATE CHROME_TEMP_MASTER SET LOGOUT_TIME='" + e.getLogoutTime() + "',PRODUCTIVITY_HRS="
 				+ e.getProductiveHours() + "   WHERE EMAIL_ID='" + e.getEmailId() + "' AND LOGIN_TIME='"
 				+ e.getLoginTime() + "'";
@@ -290,29 +408,46 @@ public class AgentDAO implements IAgentDAO {
 		return jdbcTemplate.update(query);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataInsertionInChromeDetails(com.automation
+	 * .vo.Agent) This method will insert data in Chrome Temp Detail
+	 */
 	public int dataInsertionInChromeDetails(Agent e) {
+		logger.info("inside dataInsertionInChromeDetails()");
 		String query = "insert into CHROME_TEMP_DETAILS( `EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`) values("
 				+ "'" + e.getEmailId() + "','" + e.getName() + "','" + e.getIdleFrom() + "','" + e.getIdleTo() + "','"
 				+ e.getWebsitesVisited() + "')";
 		return jdbcTemplate.update(query);
 	}
-	
-	
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#idleInterval() This method will fetch
+	 * Idle Interval
+	 */
 	public int idleInterval() {
+		logger.info("inside idleInterval()");
 		String sql = "select IFNULL(INTERVAL_SECS,0)  from CHROME_IDLE_INTERVAL";
 
 		return jdbcTemplate.queryForInt(sql);
 	}
+
+	/**
+	 * @param managerName
+	 * @return This method will fetch agent under manager Name
+	 */
 	public List<Agent> FetchAgentsUnderManager(String managerName) {
-		return jdbcTemplate.query(
-				"SELECT EMAIL_ID FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName + "'",
+		logger.info("inside FetchAgentsUnderManager()");
+		return jdbcTemplate.query("SELECT EMAIL_ID FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName + "'",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
-						
+
 						e.setEmailId(rs.getString(1));
-					
 
 						return e;
 					}

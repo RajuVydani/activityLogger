@@ -7,15 +7,17 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.automation.dao.AgentDAO;
-
+import com.automation.idao.IPolicyDAO;
 import com.automation.vo.Agent;
 
 public class SchedulerJob implements Job {
-
+	@Autowired
+	private IPolicyDAO policyDAO;
 	private final static Logger logger = Logger.getLogger(SchedulerJob.class);
 
 	/*static {
@@ -41,7 +43,7 @@ public class SchedulerJob implements Job {
 
 		try {
 
-			System.out.println("Reading Temporary Table");
+			logger.info("Reading Temporary Table");
 			AgentDAO dao = (AgentDAO) context.getBean("agentDAO");
 			///////////////////////// READING CHROME TEMPORARY
 			///////////////////////// TABLE///////////////////
@@ -52,6 +54,7 @@ public class SchedulerJob implements Job {
 				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""));
 				String agentName = "";
 				String ShiftTimings = "";
+				logger.info("Email ID :"+e.getEmailId().replaceAll("\\s+",""));
 				for (Agent e1 : agentdetails) {
 					agentName = e1.getName();
 					ShiftTimings = e1.getShiftTimings();
@@ -73,12 +76,12 @@ public class SchedulerJob implements Job {
 					}
 
 				}
-				System.out.println("errorDesc" + errorDesc);
+			
 				if (errorDesc.trim().equalsIgnoreCase("")) {
 
 					String LoginDate[] = e.getLoginTime().split(" ");
 					int count = dao.totalAgentCountInDayMaster(e.getEmailId(), LoginDate[0]);
-					System.out.println("count quwery====" + count);
+			 
 					if (count == 0) {
 
 						Agent dataInsert = new Agent();
@@ -147,7 +150,7 @@ public class SchedulerJob implements Job {
 				}
 
 				else {
-
+					logger.info("errorDesc" + errorDesc);
 					Agent dataInsert = new Agent();
 
 					dataInsert.setEmailId(e.getEmailId());
@@ -165,8 +168,7 @@ public class SchedulerJob implements Job {
 
 					dataInsert.setErrorDesc("Email Id is missing in Agent Master");
 					int status = dao.dataInsertionInException(dataInsert);
-
-					System.out.println("status===" + status);
+ 
 
 					if (status >= 0) {
 						Agent dataDelete = new Agent();
@@ -197,11 +199,11 @@ public class SchedulerJob implements Job {
 
 			///////////////////////// READING CHROME EXCEPTION
 			///////////////////////// TABLE///////////////////
-
+			logger.info("Reading Temporary Table");
 			List<Agent> chromExceplist = dao.readChromExceptionTable();
 
 			for (Agent e : chromExceplist) {
-
+				logger.info("Email ID :"+e.getEmailId().replaceAll("\\s+",""));
 				List<Agent> agentdetails = dao.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""));
 				String agentName = "";
 				String ShiftTimings = "";
@@ -226,12 +228,12 @@ public class SchedulerJob implements Job {
 					}
 
 				}
-				System.out.println("errorDesc" + errorDesc);
+			 
 				if (errorDesc.trim().equalsIgnoreCase("")) {
 
 					String LoginDate[] = e.getLoginTime().split(" ");
 					int count = dao.totalAgentCountInDayMaster(e.getEmailId(), LoginDate[0]);
-					System.out.println("count quwery====" + count);
+		 
 					if (count == 0) {
 
 						Agent dataInsert = new Agent();
@@ -287,7 +289,7 @@ public class SchedulerJob implements Job {
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			System.out.println("Exception" + e);
+			logger.error("Exception Occured in Scheduler" + e);
 			e.printStackTrace();
 		}
 	}

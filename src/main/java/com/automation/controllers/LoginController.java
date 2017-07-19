@@ -13,9 +13,9 @@ import com.automation.model.Login;
 
 @Controller
 public class LoginController {
-	
+
 	private final static Logger logger = Logger.getLogger(LoginController.class);
-	
+
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public ModelAndView login(ModelMap model) throws Exception {
 		logger.info("In login()....");
@@ -24,16 +24,15 @@ public class LoginController {
 		login2.setPassword("Enter Password");
 		model.addAttribute("loginAtt", login2);
 		return new ModelAndView("login");
-		//Login Page
+		// Login Page
 	}
-	
-	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-	public ModelAndView authenticate(@ModelAttribute("loginParam") Login login) throws Exception {
-		logger.info("In authenticate()....");
-		//logger.info("loggedIn user::" + login.getUsername());
-		//model.addAttribute("login", new Login());
-		return new ModelAndView("dashboard");
-		//Dashboard Page
-	}
+	/*
+	 * @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+	 * public ModelAndView authenticate(@ModelAttribute("loginParam") Login
+	 * login) throws Exception { logger.info("In authenticate()....");
+	 * //logger.info("loggedIn user::" + login.getUsername());
+	 * //model.addAttribute("login", new Login()); return new
+	 * ModelAndView("dashboard"); //Dashboard Page }
+	 */
 
 }
