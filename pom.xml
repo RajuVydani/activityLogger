@@ -5,17 +5,20 @@
   <artifactId>TimeTrackerWeb</artifactId>
   <packaging>war</packaging>
   <version>1.0</version>
-  <name>TimeTracker Maven Webapp</name>
+  <name>TimeTracker Webapp</name>
   <url>http://maven.apache.org</url>
+  <properties>
+		<spring.version>3.0.5.RELEASE</spring.version>
+</properties>
   
   <repositories>
-		<repository>
-			<id>maven2-repository.java.net</id>
-			<name>Java.net Repository for Maven</name>
-			<url>http://download.java.net/maven/2/</url>
-			<layout>default</layout>
-		</repository>
-	</repositories>
+	<repository>
+		<id>maven2-repository.java.net</id>
+		<name>Java.net Repository for Maven</name>
+		<url>http://download.java.net/maven/2/</url>
+		<layout>default</layout>
+	</repository>
+  </repositories>
 
 	<dependencies>
 		<!-- Jersey -->
@@ -36,31 +39,31 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>3.0.5.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>3.0.5.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<!-- <dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>3.0.5.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency> -->
 		
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-webmvc</artifactId>
-		    <version>3.0.5.RELEASE</version>
+		    <version>${spring.version}</version>
 		</dependency>
 		
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-jdbc</artifactId>
-		    <version>3.0.5.RELEASE</version>
+		    <version>${spring.version}</version>
 		</dependency>
 
 		<!-- Jersey + Spring -->
@@ -104,27 +107,19 @@
 		    <version>10.13.1.1</version>
 		</dependency> -->
 		
-		<!-- Quartz scheduler -->
-	
-		<!-- Spring 3 dependencies -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>3.0.5.RELEASE</version>
-		</dependency>
-
+		<!-- Quartz scheduler -->		
 		<!-- QuartzJobBean in spring-context-support.jar -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
-			<version>3.0.5.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<!-- Spring + Quartz need transaction -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
-			<version>3.0.5.RELEASE</version>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<!-- Quartz framework -->
@@ -139,11 +134,7 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-		</dependency>
-		
-		
-		
-		
+		</dependency>	
 	</dependencies>
 
 	<build>

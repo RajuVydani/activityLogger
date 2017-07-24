@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.dao.DataAccessException;
@@ -21,7 +22,7 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import com.automation.idao.IAgentDAO;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
-import com.sun.istack.internal.logging.Logger;
+
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;

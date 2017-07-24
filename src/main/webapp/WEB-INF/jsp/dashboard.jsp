@@ -9,6 +9,7 @@
 <body>
 	<spring:form>
 		<h1>Dashboard</h1>
+		 <spring:errors path="username" />
 		<h3>You are logged in as...${loginParam.username}</h3>
 		<h3>...${loginParam.password}</h3> 
 		<br>
