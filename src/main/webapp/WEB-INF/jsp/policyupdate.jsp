@@ -95,6 +95,7 @@
 }
 </style>
 <body>
+	<jsp:include page="navigation.jsp"></jsp:include>
 	<spring:form modelAttribute="policyAtt" action="policyupdate"
 		method="post">
 		<table border="0" align="left">

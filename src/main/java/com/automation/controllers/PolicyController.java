@@ -12,6 +12,7 @@ import org.springframework.web.servlet.ModelAndView;
 import com.automation.idao.IPolicyDAO;
 import com.automation.model.Login;
 import com.automation.model.Policy;
+import com.automation.util.AppConstants;
 
 @Controller
 public class PolicyController {
@@ -20,7 +21,7 @@ public class PolicyController {
 	@Autowired
 	private IPolicyDAO policyDAO;
 
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	/*@RequestMapping(value = "/", method = RequestMethod.GET)
 	public ModelAndView login(ModelMap model) throws Exception {
 		logger.info("In login()....");
 		Login login2 = new Login();
@@ -29,16 +30,16 @@ public class PolicyController {
 		model.addAttribute("loginAtt", login2);
 		return new ModelAndView("login");
 		// Login Page
-	}
+	}*/
 
-	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+	/*@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
 	public ModelAndView authenticate(@ModelAttribute("loginParam") Login login) throws Exception {
 		logger.info("In authenticate()....");
 		// logger.info("loggedIn user::" + login.getUsername());
 		// model.addAttribute("login", new Login());
 		return new ModelAndView("policyupdate");
 		// Dashboard Page
-	}
+	}*/
 
 	@RequestMapping(value = "/policyupdate", method = RequestMethod.POST)
 	public ModelAndView policyupdate(@ModelAttribute("policyParam") Policy policy, ModelMap model) throws Exception {
@@ -60,7 +61,7 @@ public class PolicyController {
 			policystatus.setPolicyUpdateStatus("failure");
 
 		}
-		model.addAttribute("policyStatus", policystatus);
+		model.addAttribute("policyStatus", policystatus);		
 		return new ModelAndView("policyupdatestatus");
 		// Dashboard Page
 	}
