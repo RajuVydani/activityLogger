@@ -26,7 +26,7 @@ public interface IAgentDAO {
 
 	List<Agent> readChromExceptionTable();
 
-	List<Agent> readAgentDetailsFromAgentMaster(String emailId);
+	List<Agent> readAgentDetailsFromAgentMaster(String emailId,String loginTime);
 
 	int dataInsertionInDayMaster(Agent e);
 
@@ -47,5 +47,23 @@ public interface IAgentDAO {
 	int updateIdleHrsInDayMaster(Agent e);
 
 	int totalAgentCountInChromeMater(String emailId, String logindate);
+	
+	 List<Agent> FetchAgentsInfoDayWise(String managerName,String fromDate,String toDate);
+	 
+	 List<Agent> FetchAgentsInfoOverall(String managerName,String fromDate,String toDate);
+	 
+	 List<Agent> FetchAgentsTransacation(String email_id,String loginTime,String logOutTime);
+	 
+	 List<Agent> FetchAgentsLoginLogoutTime(String emailid,String date);
+	 
+	 List<Agent> FetchAgentsProjectId(String managerName);
+	 
+	 List<Agent> FetchAgentsLocation(String managerName) ;
+	 
+	 List<Agent> FetchAgentsShiftTimings(String managerName);
+	 
+
+	 List<Agent> FetchAgentsInfoFilterSpecific(String managerName,String fromDate,String toDate,String projectId,String Location,String ShiftTimings); 
+	 
 
 }

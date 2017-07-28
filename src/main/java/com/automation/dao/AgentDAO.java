@@ -23,7 +23,6 @@ import com.automation.idao.IAgentDAO;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
 
-
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -130,6 +129,7 @@ public class AgentDAO implements IAgentDAO {
 	 */
 	public List<Agent> readChromExceptionTable() {
 		logger.info("inside readChromExceptionTable()");
+		logger.info("===");
 		return jdbcTemplate.query(
 				"select EMAIL_ID,AGENT_NAME,PRODUCTIVITY_HRS,LOGIN_TIME,LOGOUT_TIME  from CHROME_EXCEPTION_DETAILS",
 				new RowMapper<Agent>() {
@@ -153,14 +153,23 @@ public class AgentDAO implements IAgentDAO {
 	 * com.automation.idao.IAgentDAO#readAgentDetailsFromAgentMaster(java.lang.
 	 * String) This method will fetch Agent Information from Agent Master
 	 */
-	public List<Agent> readAgentDetailsFromAgentMaster(String emailId) {
+	public List<Agent> readAgentDetailsFromAgentMaster(String emailId, String loginTime) {
 		logger.info("inside readAgentDetailsFromAgentMaster()");
-		return jdbcTemplate.query("select AGENT_NAME,SHIFT_TIMINGS from AGENT_MASTER WHERE EMAIL_ID='" + emailId + "'",
+		String loginTimeSplit[] = loginTime.split(" ");
+
+		return jdbcTemplate.query(
+				"select AGENT_NAME,SHIFT_TIMINGS,LOCATION,HCM_SUPERVISOR,PROJECT_ID from AGENT_MASTER WHERE EMAIL_ID='"
+						+ emailId + "' AND ALLOCATION_START_DT <= '" + loginTimeSplit[0] + "' AND ALLOCATION_END_DT >='"
+						+ loginTimeSplit[0] + "'",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
 						e.setName(rs.getString(1));
 						e.setShiftTimings(rs.getString(2));
+						e.setLocation(rs.getString(3));
+						e.setHcmSupervisor(rs.getString(4));
+						e.setProjectId(rs.getString(5));
+
 						return e;
 					}
 				});
@@ -175,9 +184,10 @@ public class AgentDAO implements IAgentDAO {
 	 */
 	public int dataInsertionInDayMaster(Agent e) {
 		logger.info("inside dataInsertionInDayMaster()");
-		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS` ) values('"
+		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PRODUCTIVITY_HRS`,`LOCATION`,`HCM_SUPERVISOR`,`PROJECT_ID` ) values('"
 				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"
-				+ e.getLoginTime() + "','" + e.getLogoutTime() + "'," + e.getProductiveHours() + ")";
+				+ e.getLoginTime() + "','" + e.getLogoutTime() + "'," + e.getProductiveHours() + ",'" + e.getLocation()
+				+ "','" + e.getHcmSupervisor() + "','" + e.getProjectId() + "')";
 		return jdbcTemplate.update(query);
 	}
 
@@ -441,17 +451,181 @@ public class AgentDAO implements IAgentDAO {
 	 * @param managerName
 	 * @return This method will fetch agent under manager Name
 	 */
-	public List<Agent> FetchAgentsUnderManager(String managerName) {
-		logger.info("inside FetchAgentsUnderManager()");
-		return jdbcTemplate.query("SELECT EMAIL_ID FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName + "'",
+	public List<Agent> FetchAgentsInfoDayWise(String emailId, String fromDate, String toDate) {
+		logger.info(
+				"SELECT IFNULL(DATE_FORMAT(DATE, '%d %b %Y'),''),ROUND(IFNULL(PRODUCTIVITY_HRS,0),2),ROUND(IFNULL(IDLE_HRS,0),2),IFNULL(DATE_FORMAT(LOGIN_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(LOGOUT_TIME, '%d %b %Y %T'),''),IFNULL(SHIFT_DETAILS,'') FROM DAY_MASTER WHERE EMAIL_ID='"
+						+ emailId + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' ORDER BY DATE");
+		return jdbcTemplate.query(
+				"SELECT IFNULL(DATE_FORMAT(DATE, '%d %b %Y'),''),ROUND(IFNULL(PRODUCTIVITY_HRS,0),2),ROUND(IFNULL(IDLE_HRS,0),2),IFNULL(DATE_FORMAT(LOGIN_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(LOGOUT_TIME, '%d %b %Y %T'),''),IFNULL(SHIFT_DETAILS,'') FROM DAY_MASTER WHERE EMAIL_ID='"
+						+ emailId + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' ORDER BY DATE",
+				new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+
+						e.setDATE(rs.getString(1));
+
+						e.setProductiveHours(rs.getString(2));
+						e.setIdleHours(rs.getString(3));
+						e.setLoginTime(rs.getString(4));
+						e.setLogoutTime(rs.getString(5));
+						e.setShiftTimings(rs.getString(6));
+
+						return e;
+					}
+				});
+	}
+
+	public List<Agent> FetchAgentsInfoOverall(String managerName, String fromDate, String toDate) {
+		logger.info(
+				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
+						+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate
+						+ "' GROUP BY PROJECT_ID ORDER BY AGENT_NAME");
+		return jdbcTemplate.query(
+				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
+						+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate
+						+ "' GROUP BY PROJECT_ID ORDER BY AGENT_NAME",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();
 
 						e.setEmailId(rs.getString(1));
+						e.setName(rs.getString(2));
+
+						e.setProductiveHours(rs.getString(3));
+						e.setIdleHours(rs.getString(4));
+						e.setShiftTimings(rs.getString(5));
+						e.setProjectId(rs.getString(6));
+						e.setLocation(rs.getString(7));
 
 						return e;
 					}
 				});
+	}
+
+	public List<Agent> FetchAgentsInfoFilterSpecific(String managerName, String fromDate, String toDate,
+			String projectId, String Location, String ShiftTimings) {
+
+		String filterCriteria = "";
+		if (!projectId.trim().equalsIgnoreCase("")) {
+			filterCriteria = filterCriteria + "AND PROJECT_ID='" + projectId + "'";
+		}
+
+		if (!Location.trim().equalsIgnoreCase("")) {
+			filterCriteria = filterCriteria + " AND LOCATION='" + Location + "'";
+		}
+
+		if (!ShiftTimings.trim().equalsIgnoreCase("")) {
+			filterCriteria = filterCriteria + " AND SHIFT_DETAILS='" + ShiftTimings + "'";
+		}
+		logger.info(
+				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
+						+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' " + filterCriteria
+						+ " ORDER BY AGENT_NAME");
+		return jdbcTemplate.query(
+				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
+						+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' " + filterCriteria
+						+ " ORDER BY AGENT_NAME",
+				new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+
+						e.setEmailId(rs.getString(1));
+						e.setName(rs.getString(2));
+
+						e.setProductiveHours(rs.getString(3));
+						e.setIdleHours(rs.getString(4));
+						e.setShiftTimings(rs.getString(5));
+						e.setProjectId(rs.getString(6));
+						e.setLocation(rs.getString(7));
+						return e;
+					}
+				});
+	}
+
+	public List<Agent> FetchAgentsTransacation(String email_id, String loginTime, String logOutTime) {
+		logger.info(
+				"SELECT IFNULL(DATE_FORMAT(FROM_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(TO_TIME, '%d %b %Y %T'),''),TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME),WEBSITE_USED FROM DAY_DETAIL WHERE EMAIL_ID='"
+						+ email_id + "' AND FROM_TIME >='" + loginTime + "' AND FROM_TIME <='" + logOutTime + "'");
+		return jdbcTemplate.query(
+				"SELECT IFNULL(DATE_FORMAT(FROM_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(TO_TIME, '%d %b %Y %T'),''),TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME),WEBSITE_USED FROM DAY_DETAIL WHERE EMAIL_ID='"
+						+ email_id + "' AND FROM_TIME >='" + loginTime + "' AND FROM_TIME <='" + logOutTime + "'",
+				new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+						String seconds = rs.getString(3);
+						float minutes = (Float.parseFloat(seconds) / 60);
+
+						e.setIdleFrom(rs.getString(1));
+						e.setIdleTo(rs.getString(2));
+						e.setIdleHours(String.valueOf(minutes));
+						e.setWebsitesVisited(rs.getString(4));
+
+						return e;
+					}
+				});
+	}
+
+	public List<Agent> FetchAgentsLoginLogoutTime(String emailid, String date) {
+		logger.info("SELECT IFNULL(LOGIN_TIME,''),IFNULL(LOGOUT_TIME,'') FROM DAY_MASTER WHERE EMAIL_ID='" + emailid
+				+ "' AND DATE= '" + date + "'");
+		return jdbcTemplate.query("SELECT IFNULL(LOGIN_TIME,''),IFNULL(LOGOUT_TIME,'') FROM DAY_MASTER WHERE EMAIL_ID='"
+				+ emailid + "' AND DATE = '" + date + "'", new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+
+						e.setLoginTime(rs.getString(1));
+						e.setLogoutTime(rs.getString(2));
+
+						return e;
+					}
+				});
+	}
+
+	public List<Agent> FetchAgentsProjectId(String managerName) {
+		logger.info("SELECT DISTINCT IFNULL(PROJECT_ID,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
+				+ "' ORDER BY PROJECT_ID");
+		return jdbcTemplate.query("SELECT DISTINCT IFNULL(PROJECT_ID,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
+				+ managerName + "' ORDER BY PROJECT_ID", new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+
+						e.setProjectId(rs.getString(1));
+
+						return e;
+					}
+				});
+
+	}
+
+	public List<Agent> FetchAgentsLocation(String managerName) {
+		logger.info("SELECT DISTINCT IFNULL(LOCATION,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
+				+ "' ORDER BY LOCATION");
+		return jdbcTemplate.query("SELECT DISTINCT IFNULL(LOCATION,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
+				+ managerName + "' ORDER BY LOCATION", new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+
+						e.setProjectId(rs.getString(1));
+
+						return e;
+					}
+				});
+
+	}
+
+	public List<Agent> FetchAgentsShiftTimings(String managerName) {
+		logger.info("SELECT DISTINCT IFNULL(SHIFT_TIMINGS,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
+				+ "' ORDER BY SHIFT_TIMINGS");
+		return jdbcTemplate.query("SELECT DISTINCT IFNULL(SHIFT_TIMINGS,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
+				+ managerName + "' ORDER BY SHIFT_TIMINGS", new RowMapper<Agent>() {
+					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+						Agent e = new Agent();
+
+						e.setProjectId(rs.getString(1));
+
+						return e;
+					}
+				});
+
 	}
 }

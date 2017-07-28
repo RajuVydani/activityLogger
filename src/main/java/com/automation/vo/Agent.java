@@ -7,7 +7,34 @@ public class Agent {
 	private String idleFrom;
 	private String idleTo;
 	private String websitesVisited;
-	private int projectId;
+	private String projectId;
+	private String fromDate;
+	public String getFromDate() {
+		return fromDate;
+	}
+
+	public void setFromDate(String fromDate) {
+		this.fromDate = fromDate;
+	}
+
+	private String toDate;
+ 
+	public String getToDate() {
+		return toDate;
+	}
+
+	public void setToDate(String toDate) {
+		this.toDate = toDate;
+	}
+
+	public String getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
+
 	private String shiftTimings;
 	private String loginTime;
 	private String logoutTime;
@@ -17,6 +44,29 @@ public class Agent {
 	private String recordedTime;
 	private String idleTimings;
 	private int idleInterval;
+	public String location;
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+ 
+
+	public String hcmSupervisor;
+ 
+
+	public String getHcmSupervisor() {
+		return hcmSupervisor;
+	}
+
+	public void setHcmSupervisor(String hcmSupervisor) {
+		this.hcmSupervisor = hcmSupervisor;
+	}
+
 	public int getIdleInterval() {
 		return idleInterval;
 	}
@@ -110,14 +160,6 @@ public class Agent {
 
 	public void setWebsitesVisited(String websitesVisited) {
 		this.websitesVisited = websitesVisited;
-	}
-
-	public int getProjectId() {
-		return projectId;
-	}
-
-	public void setProjectId(int projectId) {
-		this.projectId = projectId;
 	}
 
 	public String getShiftTimings() {

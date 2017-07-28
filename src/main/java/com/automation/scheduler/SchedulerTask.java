@@ -32,13 +32,19 @@ public class SchedulerTask {
 
 			for (Agent e : chromtemlist) {
 
-				List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""));
+				List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""),e.getLoginTime());
 				String agentName = "";
 				String ShiftTimings = "";
+				String projectId="";
+				String location="";
+				String HCM_Supervisor="";
 				logger.info("Email ID :"+e.getEmailId().replaceAll("\\s+",""));
 				for (Agent e1 : agentdetails) {
 					agentName = e1.getName();
 					ShiftTimings = e1.getShiftTimings();
+				 projectId=e1.getProjectId();
+				 location=e1.getLocation();
+				  HCM_Supervisor=e1.getHcmSupervisor();
 
 				}
 
@@ -57,6 +63,7 @@ public class SchedulerTask {
 					}
 
 				}
+				
 			
 				if (errorDesc.trim().equalsIgnoreCase("")) {
 
@@ -72,6 +79,9 @@ public class SchedulerTask {
 						dataInsert.setName(agentName);
 						dataInsert.setLoginTime(e.getLoginTime());
 						dataInsert.setLogoutTime(e.getLogoutTime());
+						dataInsert.setLocation(location);
+						dataInsert.setHcmSupervisor(HCM_Supervisor);
+						dataInsert.setProjectId(projectId);
 						
 						String seconds=e.getProductiveHours();
 						float minutes=(Float.parseFloat(seconds)/60);
@@ -147,7 +157,7 @@ public class SchedulerTask {
 					dataInsert.setProductiveHours( String.valueOf(hours));
 				
 
-					dataInsert.setErrorDesc("Email Id is missing in Agent Master");
+					dataInsert.setErrorDesc("Project is not allocated for this date");
 					int status = agentDAO.dataInsertionInException(dataInsert);
  
 
@@ -185,12 +195,18 @@ public class SchedulerTask {
 
 			for (Agent e : chromExceplist) {
 				logger.info("Email ID :"+e.getEmailId().replaceAll("\\s+",""));
-				List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""));
+				List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(e.getEmailId().replaceAll("\\s+",""),e.getLoginTime());
 				String agentName = "";
 				String ShiftTimings = "";
+				String projectId="";
+				String location="";
+				String HCM_Supervisor="";
 				for (Agent e1 : agentdetails) {
 					agentName = e1.getName();
 					ShiftTimings = e1.getShiftTimings();
+					 projectId=e1.getProjectId();
+					 location=e1.getLocation();
+					 HCM_Supervisor=e1.getHcmSupervisor();
 
 				}
 
@@ -209,7 +225,7 @@ public class SchedulerTask {
 					}
 
 				}
-			 
+		 
 				if (errorDesc.trim().equalsIgnoreCase("")) {
 
 					String LoginDate[] = e.getLoginTime().split(" ");
@@ -225,7 +241,9 @@ public class SchedulerTask {
 						dataInsert.setLoginTime(e.getLoginTime());
 						dataInsert.setLogoutTime(e.getLogoutTime());
 						dataInsert.setProductiveHours(e.getProductiveHours());
-
+						dataInsert.setLocation(location);
+						dataInsert.setHcmSupervisor(HCM_Supervisor);
+						dataInsert.setProjectId(projectId);
 						int status = agentDAO.dataInsertionInDayMaster(dataInsert);
 						if (status >= 0) {
 							Agent dataDelete = new Agent();
@@ -274,5 +292,6 @@ public class SchedulerTask {
 			e.printStackTrace();
 		}
 	}
+ 
  
 }

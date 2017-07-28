@@ -74,7 +74,7 @@ public class TrackerService {
 	}
 
 	/**
-	 * This method will update Agent Login Time ,Logout Time,Productivy Hours,Ilde Hours and Idle Timings
+	 * This method will update Agent Login Time ,Logout Time,Productivity Hours,Idle Hours and Idle Timings
 	 * @param jsonagent
 	 * @return
 	 */
