@@ -139,7 +139,8 @@
 	<center><a href="/TimeTrackerWeb/">Home</a></center>
 <input type="hidden" name="fromdate" id ="fromdate" value='${displayList.DefaultFromDate}'>
 <input type="hidden" name="todate" id ="todate" value='${displayList.DefaultToDate}'>
-
+ 
+	<center><b>${displayList.FilterMessage}</b></center>
 <div id="overall">
 		<table class="table table-hover">
 			<tr>

@@ -123,9 +123,11 @@ public class AgentController {
 		modelAndView.addObject("locationlist", locationlist);
 		modelAndView.addObject("shiftTimingslist", shiftTimingslist);
 		
+		
 		Map<String, Object> model = new HashMap<String, Object>();
 		 
 		model.put("ManagerName", managerName.trim());
+		model.put("FilterMessage", "");
  
 
 		modelAndView.addObject("displayList", model);
@@ -278,14 +280,28 @@ else
 		
 		logger.info("shiftTimingslist"+shiftTimingslist);
 		Map<String, Object> model = new HashMap<String, Object>();
-
+String filerMessage="Agent Details From "+DefaultFromDate+" To "+DefaultToDate;
+/*if(!projectId.trim().equalsIgnoreCase(""))
+{
+	filerMessage=filerMessage+"<BR> Project ID - "+projectId;
+}
+if(!location.trim().equalsIgnoreCase(""))
+{
+	filerMessage=filerMessage+"<BR> Location - "+location;
+}
+if(!ShiftTimings.trim().equalsIgnoreCase(""))
+{
+	filerMessage=filerMessage+"<BR>  Shift Timings - "+ShiftTimings;
+}*/
+ 
 		model.put("DefaultFromDate", DefaultFromDate);
 		model.put("DefaultToDate", DefaultToDate);
 		model.put("ManagerName", managerName.trim());
+		model.put("FilterMessage", filerMessage);
 		modelAndView.addObject("agentOverAllList", agentOverAlldetails);
 		modelAndView.addObject("displayList", model);
 	
- 
+		logger.info("FilterMessage"+filerMessage);
 		modelAndView.addObject("projectlist", projectlist);
 		modelAndView.addObject("locationlist", locationlist);
 		modelAndView.addObject("shiftTimingslist", shiftTimingslist);

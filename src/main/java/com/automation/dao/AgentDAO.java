@@ -155,12 +155,15 @@ public class AgentDAO implements IAgentDAO {
 	 */
 	public List<Agent> readAgentDetailsFromAgentMaster(String emailId, String loginTime) {
 		logger.info("inside readAgentDetailsFromAgentMaster()");
-		String loginTimeSplit[] = loginTime.split(" ");
-
+		/*
+		 * This is commented for multiple records for same agent in Agent Master
+		//String loginTimeSplit[] = loginTime.split(" ");
+	//	"select AGENT_NAME,SHIFT_TIMINGS,LOCATION,HCM_SUPERVISOR,PROJECT_ID from AGENT_MASTER WHERE EMAIL_ID='"
+	//	+ emailId + "' AND ALLOCATION_START_DT <= '" + loginTimeSplit[0] + "' AND ALLOCATION_END_DT >='"
+	//	+ loginTimeSplit[0] + "'",*/
 		return jdbcTemplate.query(
 				"select AGENT_NAME,SHIFT_TIMINGS,LOCATION,HCM_SUPERVISOR,PROJECT_ID from AGENT_MASTER WHERE EMAIL_ID='"
-						+ emailId + "' AND ALLOCATION_START_DT <= '" + loginTimeSplit[0] + "' AND ALLOCATION_END_DT >='"
-						+ loginTimeSplit[0] + "'",
+						+ emailId + "'",
 				new RowMapper<Agent>() {
 					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 						Agent e = new Agent();

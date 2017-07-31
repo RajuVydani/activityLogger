@@ -157,7 +157,8 @@ public class SchedulerTask {
 					dataInsert.setProductiveHours( String.valueOf(hours));
 				
 
-					dataInsert.setErrorDesc("Project is not allocated for this date");
+				//	dataInsert.setErrorDesc("Project is not allocated for this date");
+					dataInsert.setErrorDesc("Email Id is missing in Agent Master");
 					int status = agentDAO.dataInsertionInException(dataInsert);
  
 
