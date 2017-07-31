@@ -5,16 +5,17 @@
 <%@ page import="com.automation.vo.Agent"%>
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="java.util.List"%>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-		<title>Dashboard</title>	
+		<title>Dashboard</title>
+		  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
 	</head>
 	<body>
 	
@@ -37,7 +38,15 @@
 			    var y = screen.height/2 - 450/2;
 			    var left = (window.screen.width / 2) - ((width / 2) + 10);
 			    var top = (window.screen.height / 2) - ((height / 2) + 50);
-var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&todate="+toDate;
+			    
+			    emailid = encodeURIComponent(emailid);
+			    fromDate = encodeURIComponent(fromDate);
+			    toDate = encodeURIComponent(toDate);
+ 
+			    
+			    
+			    
+                var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&todate="+toDate;
 			window.open(url,'Time Tracker',
 			    "status=no,height=" + height + ",width=" + width + ",resizable=yes,left="
 			    + left + ",top=" + top + ",screenX=" + left + ",screenY="
@@ -57,7 +66,7 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
 
 	</center>
 	<input type="Hidden" name="hcmSupervisor" id ="hcmSupervisor" value='${displayList.ManagerName}'>
-	<TABLE align="center">
+	<TABLE align="center" border="0">
 	<TR>
 	<TD>From Date</TD>
 		<TD>To Date</TD>
@@ -66,10 +75,10 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
 					<TD>Shift Timings</TD>
 						<TD></TD>
 	<TR>
-	<TD><input type="date"  name="fromDate" required/> </TD>
-	<TD> <input type="date"  name="toDate" required/></TD>
+	<TD><input type="date"  name="fromDate" required style="width:150px;height: 22px"/> </TD>
+	<TD> <input type="date"  name="toDate" style="width:150px;height: 22px" required/></TD>
 	<TD> 
-	<select name="projectId">
+	<select name="projectId" style="width:150px;height: 22px">
   <option value="">--Select--</option>
   
   	<c:if test="${not empty projectlist}">
@@ -84,7 +93,7 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
 </select>
 	</TD>
 	<TD> 
-	<select name="location">
+	<select name="location" style="width:150px;height: 22px">
   <option value="">--Select--</option>
   
   	<c:if test="${not empty locationlist}">
@@ -101,7 +110,7 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
 	</TD>
 	<TD> 
 	
-<select name="shiftTimings">
+<select name="shiftTimings" style="width:150px;height: 22px">
   <option value="">--Select--</option>
   
   	<c:if test="${not empty shiftTimingslist}">
@@ -117,7 +126,7 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
 </select>
 	</TD>
 	<TD>
-	<td>&nbsp;<input type="submit"  value="submit"/></TD>
+	<td>&nbsp;<input type="submit"  value="submit" style="width:150px;height: 22px" /></TD>
 	</TR>
 
 
@@ -127,6 +136,7 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
 
 </TABLE>
 	</spring:form>
+	<center><a href="/TimeTrackerWeb/">Home</a></center>
 <input type="hidden" name="fromdate" id ="fromdate" value='${displayList.DefaultFromDate}'>
 <input type="hidden" name="todate" id ="todate" value='${displayList.DefaultToDate}'>
 
@@ -165,7 +175,7 @@ var url="/TimeTrackerWeb/daytransaction?id="+emailid+"&fromdate="+fromDate+"&tod
  
  
 		<br>
-		<a href="/TimeTrackerWeb/">Home</a>
+
 
 	</body>
 </html>

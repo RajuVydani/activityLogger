@@ -1,5 +1,6 @@
 package com.automation.controllers;
 
+import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -341,10 +342,17 @@ else
 	public ModelAndView daytransacion(@RequestParam("id") String emailId,@RequestParam("fromdate") String fromDateFormatted
 			,@RequestParam("todate") String toDateFormatted) throws Exception {
 		logger.info("In daytransacion()...." + emailId);
+		emailId=URLDecoder.decode(emailId, "UTF-8");
+		fromDateFormatted=URLDecoder.decode(fromDateFormatted, "UTF-8");
+		toDateFormatted=URLDecoder.decode(toDateFormatted, "UTF-8");
 		
-		logger.info("emailId"+emailId);
-		logger.info("fromdate"+dateFormatRevert(fromDateFormatted));
-		logger.info("todate"+dateFormatRevert(toDateFormatted));
+		
+		
+		logger.info("deocded email"+URLDecoder.decode(emailId, "UTF-8"));
+		logger.info("decoded from date "+URLDecoder.decode(fromDateFormatted, "UTF-8"));
+		logger.info("decoded To date "+URLDecoder.decode(toDateFormatted, "UTF-8"));
+ 
+
   
 		int count = 0;
 
@@ -402,8 +410,19 @@ else
 	public ModelAndView ildetransacion(@RequestParam("id") String emailId, @RequestParam("date") String transactiondate,@RequestParam("fromdate") String fromDateFormatted
 			,@RequestParam("todate") String toDateFormatted)
 			throws Exception {
-		logger.info("transactiondate" + transactiondate);
-		logger.info("transactiondate formatted" + dateFormatRevert(transactiondate));
+		
+		emailId=URLDecoder.decode(emailId, "UTF-8");
+		fromDateFormatted=URLDecoder.decode(fromDateFormatted, "UTF-8");
+		toDateFormatted=URLDecoder.decode(toDateFormatted, "UTF-8");
+		transactiondate=URLDecoder.decode(transactiondate, "UTF-8");
+		
+		
+		
+		logger.info("deocded email"+URLDecoder.decode(emailId, "UTF-8"));
+		logger.info("decoded from date "+URLDecoder.decode(fromDateFormatted, "UTF-8"));
+		logger.info("decoded To date "+URLDecoder.decode(toDateFormatted, "UTF-8"));
+		logger.info("decoded transactiondate"+URLDecoder.decode(transactiondate, "UTF-8"));
+  
 		List<Agent> agenttransactiondetails = agentDAO.FetchAgentsLoginLogoutTime(emailId.trim(), dateFormatRevert(transactiondate));
 		ModelAndView modelAndView = new ModelAndView("idletransaction");
 		String loginTime = "";
