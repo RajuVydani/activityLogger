@@ -21,7 +21,7 @@ import com.automation.exceptions.CustomException;
 import com.automation.exceptions.ValidationException;
 import com.automation.idao.IAgentDAO;
 import com.automation.idao.IPolicyDAO;
- 
+
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
 import com.automation.vo.Policy;
@@ -74,7 +74,9 @@ public class TrackerService {
 	}
 
 	/**
-	 * This method will update Agent Login Time ,Logout Time,Productivity Hours,Idle Hours and Idle Timings
+	 * This method will update Agent Login Time ,Logout Time,Productivity
+	 * Hours,Idle Hours and Idle Timings
+	 * 
 	 * @param jsonagent
 	 * @return
 	 */
@@ -93,10 +95,8 @@ public class TrackerService {
 			String serviceName = jsonagent.getServicename();
 			String agentName = jsonagent.getName();
 			String agentEmailId = jsonagent.getEmailId();
-			String productivityHours = jsonagent.getProductiveHours();
-			String loginTime = jsonagent.getLoginTime();
-			String logoutTime = jsonagent.getLogoutTime();
 			String idleTimings = jsonagent.getIdleTimings();
+
 			logger.info("Service Name :" + serviceName);
 			logger.info("Email Id=== :" + agentEmailId);
 			// Validations.
@@ -111,26 +111,15 @@ public class TrackerService {
 					|| "".trim().equalsIgnoreCase(agentEmailId)) {
 				throw new ValidationException("Validation Exception :: Agent Email is empty");
 			}
-			if (null == productivityHours || "undefined".equalsIgnoreCase(productivityHours)
-					|| "".trim().equalsIgnoreCase(productivityHours)) {
-				throw new ValidationException("Validation Exception :: Productivity Hours is empty");
-			}
-			if (null == loginTime || "undefined".equalsIgnoreCase(loginTime) || "".trim().equalsIgnoreCase(loginTime)) {
-				throw new ValidationException("Validation Exception :: Login Time is empty");
-			}
-			if (null == logoutTime || "undefined".equalsIgnoreCase(logoutTime)
-					|| "".trim().equalsIgnoreCase(logoutTime)) {
-				throw new ValidationException("Validation Exception :: Logout Time is empty");
-			}
+
 			if (null == idleTimings || "undefined".equalsIgnoreCase(idleTimings)) {
-				throw new ValidationException("Validation Exception ::IdleTimingsl is null");
+				throw new ValidationException("Validation Exception ::IdleTimings is null");
 			}
 
 			// if("error".equalsIgnoreCase(agentName)) {
 			// throw new NullPointerException();
 			// }
 
-			String responseLoginTime = "";
 			int responseUpdateSeconds = 0;
 			if (serviceName.trim().equalsIgnoreCase("storeagentdata")) {
 
@@ -139,67 +128,6 @@ public class TrackerService {
 				agentEmailId = agentEmailId.replaceAll("\\s+", "");
 				agent.setEmailId(agentEmailId);
 				agent.setName(agentName);
-				String seconds = productivityHours;
-
-				agent.setProductiveHours(String.valueOf(seconds));
-				agent.setLoginTime(loginTime);
-				agent.setLogoutTime(logoutTime);
-
-				List<Agent> chromemasterlist = agentDAO.CheckInChromeMaster(agentEmailId, loginTime);
-
-				String prodHrsChromeMaster = "";
-				int count = 0;
-				for (Agent e : chromemasterlist) {
-					prodHrsChromeMaster = e.getProductiveHours();
-
-					count = 1;
-				}
-
-				if (count == 0) {
-
-					Agent agentdet = new Agent();
-					agentdet.setEmailId(agentEmailId);
-					agentdet.setLoginTime(loginTime);
-					List<Agent> chromtemlist = agentDAO.CheckLoginEntry(agentdet);
-					String exist = "";
-					for (Agent e : chromtemlist) {
-						responseLoginTime = e.getLoginTime();
-						exist = "yes";
-						Agent updateagent = new Agent();
-						updateagent.setEmailId(agentEmailId);
-						updateagent.setName(agentName);
-						String updateseconds = productivityHours;
-						int totalseconds = ((Integer.parseInt(updateseconds)
-								+ Integer.parseInt(e.getProductiveHours())));
-
-						updateagent.setProductiveHours(String.valueOf(totalseconds));
-						updateagent.setLoginTime(e.getLoginTime());
-						updateagent.setLogoutTime(logoutTime);
-						responseagent.setLoginTime(responseLoginTime);
-						agentDAO.dataUpdateInChromeMater(updateagent);
-					}
-					if (!exist.trim().equalsIgnoreCase("yes")) {
-						responseLoginTime = loginTime;
-						responseagent.setLoginTime(responseLoginTime);
-						agentDAO.dataInsertionInChromeMater(agent);
-
-					}
-
-				} else {
-
-					Agent updateagent = new Agent();
-					updateagent.setEmailId(agentEmailId);
-					updateagent.setName(agentName);
-					String updateseconds = prodHrsChromeMaster;
-					int totalseconds = ((Integer.parseInt(updateseconds) + Integer.parseInt(productivityHours)));
-
-					updateagent.setProductiveHours(String.valueOf(totalseconds));
-					updateagent.setLoginTime(loginTime);
-					updateagent.setLogoutTime(logoutTime);
-					agentDAO.dataUpdateInChromeMater(updateagent);
-					responseLoginTime = loginTime;
-					responseagent.setLoginTime(responseLoginTime);
-				}
 
 				if (!idleTimings.trim().equalsIgnoreCase("")) {
 
@@ -212,6 +140,7 @@ public class TrackerService {
 						String fromTime = splitfeilds[0];
 						String toTime = splitfeilds[1];
 						String websitesVisited = splitfeilds[2];
+						String activityCode = splitfeilds[4];
 						String webistedvisited_updated = "";
 						String websitevistedsplit[] = websitesVisited.split(",");
 						for (int j = 0; j < websitevistedsplit.length; j++) {
@@ -234,10 +163,8 @@ public class TrackerService {
 						updateagent.setIdleFrom(fromTime);
 						updateagent.setIdleTo(toTime);
 						updateagent.setWebsitesVisited(webistedvisited_updated);
-						int updateStatus = agentDAO.dataInsertionInChromeDetails(updateagent);
-						if (updateStatus >= 0) {
-
-						}
+						updateagent.setActivityCode(activityCode);
+						agentDAO.dataInsertionInChromeDetails(updateagent);
 
 					}
 				}
@@ -269,6 +196,7 @@ public class TrackerService {
 
 	/**
 	 * This method will check for latest policy and update policy flag
+	 * 
 	 * @param jsonagent
 	 * @return
 	 */
@@ -277,7 +205,6 @@ public class TrackerService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response policyupdate(Policy jsonagent) {
- 
 
 		String serviceStatus = "failure";
 		Policy responseagent = new Policy();
@@ -316,20 +243,18 @@ public class TrackerService {
 				policy.setEmailId(agentEmailId);
 				List<Policy> policylist = policyDAO.readPolicyFlag(agentEmailId);
 
-			 
+				List<Policy> policydetails = policyDAO.readPolicyDetails();
 
-					List<Policy> policydetails = policyDAO.readPolicyDetails();
+				for (Policy e : policydetails) {
+					responseagent.setEmailId(agentEmailId);
+					responseagent.setPolicyContent(e.getPolicyContent());
+					responseagent.setPolicyTagging(e.getPolicyTagging());
+					responseagent.setPolicyUpdatedOn(e.getPolicyUpdatedOn());
+					logger.info("policy Content :" + (e.getPolicyContent()));
+					logger.info("policy Tagging :" + (e.getPolicyTagging()));
+					logger.info("policy Updated On :" + (e.getPolicyUpdatedOn()));
+				}
 
-					for (Policy e : policydetails) {
-						responseagent.setEmailId(agentEmailId);
-						responseagent.setPolicyContent(e.getPolicyContent());
-						responseagent.setPolicyTagging(e.getPolicyTagging());
-						responseagent.setPolicyUpdatedOn(e.getPolicyUpdatedOn());
-						logger.info("policy Content :"+(e.getPolicyContent()));
-						logger.info("policy Tagging :"+(e.getPolicyTagging()));
-						logger.info("policy Updated On :"+(e.getPolicyUpdatedOn()));
-					}
- 
 			}
 			if (serviceName.trim().equalsIgnoreCase("policyupdate")) {
 
@@ -343,7 +268,7 @@ public class TrackerService {
 
 				for (Policy e : policylist) {
 					policyflag = e.getPolicyFlag();
-				logger.info("policyflag :"+policyflag);
+					logger.info("policyflag :" + policyflag);
 
 				}
 
@@ -356,9 +281,9 @@ public class TrackerService {
 						responseagent.setPolicyContent(e.getPolicyContent());
 						responseagent.setPolicyTagging(e.getPolicyTagging());
 						responseagent.setPolicyUpdatedOn(e.getPolicyUpdatedOn());
-						logger.info("policy Content :"+(e.getPolicyContent()));
-						logger.info("policy Tagging :"+(e.getPolicyTagging()));
-						logger.info("policy Updated On :"+(e.getPolicyUpdatedOn()));
+						logger.info("policy Content :" + (e.getPolicyContent()));
+						logger.info("policy Tagging :" + (e.getPolicyTagging()));
+						logger.info("policy Updated On :" + (e.getPolicyUpdatedOn()));
 					}
 
 				}

@@ -9,6 +9,25 @@ public class Agent {
 	private String websitesVisited;
 	private String projectId;
 	private String fromDate;
+	private String activityCode;
+	private String activityHrs;
+
+	public String getActivityHrs() {
+		return activityHrs;
+	}
+
+	public void setActivityHrs(String activityHrs) {
+		this.activityHrs = activityHrs;
+	}
+
+	public String getActivityCode() {
+		return activityCode;
+	}
+
+	public void setActivityCode(String activityCode) {
+		this.activityCode = activityCode;
+	}
+
 	public String getFromDate() {
 		return fromDate;
 	}
@@ -18,7 +37,7 @@ public class Agent {
 	}
 
 	private String toDate;
- 
+
 	public String getToDate() {
 		return toDate;
 	}
@@ -54,10 +73,7 @@ public class Agent {
 		this.location = location;
 	}
 
- 
-
 	public String hcmSupervisor;
- 
 
 	public String getHcmSupervisor() {
 		return hcmSupervisor;

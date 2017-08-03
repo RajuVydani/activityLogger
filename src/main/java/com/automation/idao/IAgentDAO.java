@@ -8,62 +8,51 @@ public interface IAgentDAO {
 
 	String getAgentData(Agent agent) throws Exception;
 
-	List<Agent> CheckInChromeMaster(String emailId, String loginTime);
-
-	List<Agent> CheckLoginEntry(Agent e);
-
-	int dataUpdateInChromeMater(Agent e);
-
-	int dataInsertionInChromeMater(Agent e);
-
 	int dataInsertionInChromeDetails(Agent e);
 
 	int idleInterval();
 
-	List<Agent> readChromTempMasterTable();
+	List<Agent> readChromeTempAgentTransactions(String emailid);
 
-	List<Agent> readChromTempTable();
+	List<Agent> readChromeTempAgentIds();
 
-	List<Agent> readChromExceptionTable();
+	List<Agent> readAgentDetailsFromAgentMaster(String emailId);
 
-	List<Agent> readAgentDetailsFromAgentMaster(String emailId,String loginTime);
+	List<Agent> calculateTempActiviyHrs(Agent e);
+
+	List<Agent> calculateExceptionActiviyHrs(Agent e);
 
 	int dataInsertionInDayMaster(Agent e);
 
-	int dataInsertionInDayDetail(Agent e);
+	int dataInsertionInDayDetailFromTempDetails(Agent e);
 
-	int totalAgentCountInDayMaster(String emailId, String Date);
-
-	int deleteFromChromeTempDetail(Agent e);
-
-	int deleteFromChromeTempMaster(Agent e);
+	int dataInsertionInDayDetailFromExceptionDetails(Agent e);
 
 	int dataInsertionInException(Agent e);
 
 	int deleteFromChromeException(Agent e);
 
-	List<Agent> CalculateIdleHrs(Agent e);
+	int deleteFromChromeTempDetail(Agent e);
 
-	int updateIdleHrsInDayMaster(Agent e);
+	List<Agent> FetchAgentsInfoDayWise(String managerName, String fromDate, String toDate);
 
-	int totalAgentCountInChromeMater(String emailId, String logindate);
-	
-	 List<Agent> FetchAgentsInfoDayWise(String managerName,String fromDate,String toDate);
-	 
-	 List<Agent> FetchAgentsInfoOverall(String managerName,String fromDate,String toDate);
-	 
-	 List<Agent> FetchAgentsTransacation(String email_id,String loginTime,String logOutTime);
-	 
-	 List<Agent> FetchAgentsLoginLogoutTime(String emailid,String date);
-	 
-	 List<Agent> FetchAgentsProjectId(String managerName);
-	 
-	 List<Agent> FetchAgentsLocation(String managerName) ;
-	 
-	 List<Agent> FetchAgentsShiftTimings(String managerName);
-	 
+	List<Agent> FetchAgentsInfoOverall(String managerName, String fromDate, String toDate);
 
-	 List<Agent> FetchAgentsInfoFilterSpecific(String managerName,String fromDate,String toDate,String projectId,String Location,String ShiftTimings); 
-	 
+	List<Agent> FetchAgentsTransacation(String email_id, String loginTime, String logOutTime);
+
+	List<Agent> FetchAgentsLoginLogoutTime(String emailid, String date);
+
+	List<Agent> FetchAgentsProjectId(String managerName);
+
+	List<Agent> FetchAgentsLocation(String managerName);
+
+	List<Agent> FetchAgentsShiftTimings(String managerName);
+
+	List<Agent> FetchAgentsInfoFilterSpecific(String managerName, String fromDate, String toDate, String projectId,
+			String Location, String ShiftTimings);
+
+	List<Agent> readChromeExceptionAgentTransactions(String emailid);
+
+	List<Agent> readChromeExceptionAgentIds();
 
 }
