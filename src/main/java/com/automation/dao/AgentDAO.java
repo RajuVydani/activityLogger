@@ -216,7 +216,7 @@ public class AgentDAO implements IAgentDAO {
 	 */
 	public int dataInsertionInDayMaster(Agent e) {
 		logger.info("inside dataInsertionInDayMaster()");
-		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`01`,`02`,`03`,`04`,`05`,`06`,`07`,`08`,`09`,`10`,`LOCATION`,`HCM_SUPERVISOR`,`PROJECT_ID` ) values('"
+		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PROD`,`IDLE`,`BREAK`,`MEALS`,`HUDDLE`,`WELLNESS_SUPPORT`,`COACHING`,`TEAM_MEETING`,`FB_TRAINING`,`NON_FB_TRAINING`,`LOCATION`,`HCM_SUPERVISOR`,`PROJECT_ID` ) values('"
 				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"
 				+ e.getLoginTime() + "','" + e.getLogoutTime() + "'," + e.getActivityHrs() + ",'" + e.getLocation()
 				+ "','" + e.getHcmSupervisor() + "','" + e.getProjectId() + "')";
