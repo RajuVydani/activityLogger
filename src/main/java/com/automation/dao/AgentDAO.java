@@ -84,7 +84,7 @@ public class AgentDAO implements IAgentDAO {
 		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
 		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
 		String query = "select * from CHROME_TEMP_DETAILS where EMAIL_ID='" + emailid.trim() + "' ORDER BY FROM_TIME";
-		logger.info("===query==" + "select * from CHROME_TEMP_DETAILS where EMAIL_ID='" + emailid.trim()
+		logger.info("query==" + "select * from CHROME_TEMP_DETAILS where EMAIL_ID='" + emailid.trim()
 				+ "' ORDER BY FROM_TIME");
 		return jdbcTemplate.query(query, new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
@@ -432,6 +432,10 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsInfoOverall(java.lang.String, java.lang.String, java.lang.String)
+	 * This method will fetch agent's over all Information
+	 */
 	public List<Agent> FetchAgentsInfoOverall(String managerName, String fromDate, String toDate) {
 		logger.info(
 				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
@@ -459,6 +463,10 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsInfoFilterSpecific(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * This method will fetch agent Info filter Specific
+	 */
 	public List<Agent> FetchAgentsInfoFilterSpecific(String managerName, String fromDate, String toDate,
 			String projectId, String Location, String ShiftTimings) {
 
@@ -499,6 +507,10 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsTransacation(java.lang.String, java.lang.String, java.lang.String)
+	 * This method will fetch Agent's Transaction
+	 */
 	public List<Agent> FetchAgentsTransacation(String email_id, String loginTime, String logOutTime) {
 		logger.info(
 				"SELECT IFNULL(DATE_FORMAT(FROM_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(TO_TIME, '%d %b %Y %T'),''),TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME),WEBSITE_USED FROM DAY_DETAIL WHERE EMAIL_ID='"
@@ -522,6 +534,10 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsLoginLogoutTime(java.lang.String, java.lang.String)
+	 * This method will fetch agent login and logout time.
+	 */
 	public List<Agent> FetchAgentsLoginLogoutTime(String emailid, String date) {
 		logger.info("SELECT IFNULL(LOGIN_TIME,''),IFNULL(LOGOUT_TIME,'') FROM DAY_MASTER WHERE EMAIL_ID='" + emailid
 				+ "' AND DATE= '" + date + "'");
@@ -538,6 +554,10 @@ public class AgentDAO implements IAgentDAO {
 				});
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsProjectId(java.lang.String)
+	 * This method will Fetch Agent's Project Id  
+	 */
 	public List<Agent> FetchAgentsProjectId(String managerName) {
 		logger.info("SELECT DISTINCT IFNULL(PROJECT_ID,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
 				+ "' ORDER BY PROJECT_ID");
@@ -554,6 +574,10 @@ public class AgentDAO implements IAgentDAO {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsLocation(java.lang.String)
+	 * This method will fetch Agent's Location
+	 */
 	public List<Agent> FetchAgentsLocation(String managerName) {
 		logger.info("SELECT DISTINCT IFNULL(LOCATION,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
 				+ "' ORDER BY LOCATION");
@@ -570,6 +594,10 @@ public class AgentDAO implements IAgentDAO {
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#FetchAgentsShiftTimings(java.lang.String)
+	 * This method will fetch agents shift timings
+	 */
 	public List<Agent> FetchAgentsShiftTimings(String managerName) {
 		logger.info("SELECT DISTINCT IFNULL(SHIFT_TIMINGS,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
 				+ "' ORDER BY SHIFT_TIMINGS");

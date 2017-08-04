@@ -60,6 +60,9 @@ public class TrackerService {
 	}
 
 	// http://localhost:8082/TimeTracker/rest/agent/data
+	/**
+	 * @return
+	 */
 	@GET
 	@Path("/data")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -80,6 +83,11 @@ public class TrackerService {
 	 * @param jsonagent
 	 * @return
 	 */
+	/**
+	 * @param jsonagent
+	 * @return
+	 * Service For Updating data from Chrome extension to database
+	 */
 	@POST
 	@Path("/info")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -95,7 +103,7 @@ public class TrackerService {
 			String serviceName = jsonagent.getServicename();
 			String agentName = jsonagent.getName();
 			String agentEmailId = jsonagent.getEmailId();
-			String idleTimings = jsonagent.getIdleTimings();
+			String Timings = jsonagent.getIdleTimings();
 
 			logger.info("Service Name :" + serviceName);
 			logger.info("Email Id=== :" + agentEmailId);
@@ -112,8 +120,8 @@ public class TrackerService {
 				throw new ValidationException("Validation Exception :: Agent Email is empty");
 			}
 
-			if (null == idleTimings || "undefined".equalsIgnoreCase(idleTimings)) {
-				throw new ValidationException("Validation Exception ::IdleTimings is null");
+			if (null == Timings || "undefined".equalsIgnoreCase(Timings)) {
+				throw new ValidationException("Validation Exception ::Timings is null");
 			}
 
 			// if("error".equalsIgnoreCase(agentName)) {
@@ -129,9 +137,9 @@ public class TrackerService {
 				agent.setEmailId(agentEmailId);
 				agent.setName(agentName);
 
-				if (!idleTimings.trim().equalsIgnoreCase("")) {
+				if (!Timings.trim().equalsIgnoreCase("")) {
 
-					String splitline[] = idleTimings.split("&&");
+					String splitline[] = Timings.split("&&");
 
 					for (int i = 0; i < splitline.length; i++) {
 
@@ -164,7 +172,8 @@ public class TrackerService {
 						updateagent.setIdleTo(toTime);
 						updateagent.setWebsitesVisited(webistedvisited_updated);
 						updateagent.setActivityCode(activityCode);
-						agentDAO.dataInsertionInChromeDetails(updateagent);
+						int insertStatus=agentDAO.dataInsertionInChromeDetails(updateagent);
+						logger.info("No Of Rows Inserted : "+insertStatus);
 
 					}
 				}

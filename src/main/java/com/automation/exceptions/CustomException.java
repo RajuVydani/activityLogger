@@ -9,6 +9,9 @@ public class CustomException extends Throwable implements ExceptionMapper<Throwa
 	
 	private static final long serialVersionUID = 1L;
 
+	/* (non-Javadoc)
+	 * @see javax.ws.rs.ext.ExceptionMapper#toResponse(java.lang.Throwable)
+	 */
 	public Response toResponse(Throwable exception) {
 		return Response.status(500).entity("Exception Occured on Serverside while posting agent data from extension !!!").type("text/plain").build();
 	}

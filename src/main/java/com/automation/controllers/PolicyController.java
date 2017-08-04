@@ -21,26 +21,30 @@ public class PolicyController {
 	@Autowired
 	private IPolicyDAO policyDAO;
 
-	/*@RequestMapping(value = "/", method = RequestMethod.GET)
-	public ModelAndView login(ModelMap model) throws Exception {
-		logger.info("In login()....");
-		Login login2 = new Login();
-		login2.setUsername("Enter Username");
-		login2.setPassword("Enter Password");
-		model.addAttribute("loginAtt", login2);
-		return new ModelAndView("login");
-		// Login Page
-	}*/
+	/*
+	 * @RequestMapping(value = "/", method = RequestMethod.GET) public
+	 * ModelAndView login(ModelMap model) throws Exception {
+	 * logger.info("In login()...."); Login login2 = new Login();
+	 * login2.setUsername("Enter Username");
+	 * login2.setPassword("Enter Password"); model.addAttribute("loginAtt",
+	 * login2); return new ModelAndView("login"); // Login Page }
+	 */
 
-	/*@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
-	public ModelAndView authenticate(@ModelAttribute("loginParam") Login login) throws Exception {
-		logger.info("In authenticate()....");
-		// logger.info("loggedIn user::" + login.getUsername());
-		// model.addAttribute("login", new Login());
-		return new ModelAndView("policyupdate");
-		// Dashboard Page
-	}*/
+	/*
+	 * @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+	 * public ModelAndView authenticate(@ModelAttribute("loginParam") Login
+	 * login) throws Exception { logger.info("In authenticate()...."); //
+	 * logger.info("loggedIn user::" + login.getUsername()); //
+	 * model.addAttribute("login", new Login()); return new
+	 * ModelAndView("policyupdate"); // Dashboard Page }
+	 */
 
+	/**
+	 * @param policy
+	 * @param model
+	 * @return Policy Update Page
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/policyupdate", method = RequestMethod.POST)
 	public ModelAndView policyupdate(@ModelAttribute("policyParam") Policy policy, ModelMap model) throws Exception {
 		logger.info("In policyupdate()....");
@@ -61,7 +65,7 @@ public class PolicyController {
 			policystatus.setPolicyUpdateStatus("failure");
 
 		}
-		model.addAttribute("policyStatus", policystatus);		
+		model.addAttribute("policyStatus", policystatus);
 		return new ModelAndView("policyupdatestatus");
 		// Dashboard Page
 	}

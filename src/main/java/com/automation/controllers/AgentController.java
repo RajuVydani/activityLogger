@@ -135,7 +135,7 @@ public class AgentController {
 		logger.info("Shift Details==" + agent.getShiftTimings());
 		String managerName = agent.getHcmSupervisor();
 		String projectId = agent.getProjectId();
-		String location = agent.getLocation();
+	    String location = agent.getLocation();
 		String ShiftTimings = agent.getShiftTimings();
 
 		Calendar now = Calendar.getInstance();
@@ -277,6 +277,11 @@ public class AgentController {
 		return modelAndView;
 	}
 
+	/**
+	 * @param date
+	 * @return
+	 * Date Format conversion
+	 */
 	String dateFormatconversion(String date) {
 
 		DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -294,6 +299,11 @@ public class AgentController {
 
 	}
 
+	/**
+	 * @param date
+	 * @return
+	 * Date Format Conversion
+	 */
 	String dateFormatRevert(String date) {
 
 		DateFormat formatter = null;

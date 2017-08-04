@@ -22,6 +22,10 @@ public class SchedulerTask {
 
 	private final static Logger logger = Logger.getLogger(SchedulerTask.class);
 
+	/**
+	 * Transaction from Chrome Temp table to Day master,Day Detail,Chrome
+	 * Exception Table
+	 */
 	public void scheduler() {
 
 		try {
@@ -61,7 +65,6 @@ public class SchedulerTask {
 						transactionDifference = dateTimeDifference(LastTransactionToTime, t.getFromDate().trim());
 
 						if (transactionDifference > 240) {
-							////////
 
 							logger.info("Email ID :" + e.getEmailId().replaceAll("\\s+", ""));
 							List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(emailId);
@@ -727,6 +730,11 @@ public class SchedulerTask {
 		}
 	}
 
+	/**
+	 * @param dateStart
+	 * @param dateStop
+	 * @return Difference between two datetime
+	 */
 	public float dateTimeDifference(String dateStart, String dateStop) {
 
 		String startDtsplit[] = dateStart.split(" ");
@@ -770,15 +778,22 @@ public class SchedulerTask {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			logger.error("Exception Occured in dateTimeDifference" + e);
 		}
 		return 0;
 
 	}
 
+	/**
+	 * @param Date
+	 * @return Minus one day with give given date
+	 */
 	public String minusDate(String Date) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		try {
 		String datesplt[] = Date.split("-");
 		Date currentDate = new Date(datesplt[0] + "/" + datesplt[1] + "/" + datesplt[2]);
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
 		System.out.println(dateFormat.format(currentDate));
 
 		// convert date to calendar
@@ -794,6 +809,11 @@ public class SchedulerTask {
 
 		System.out.println(dateFormat.format(currentDateMinusOne));
 		return dateFormat.format(currentDateMinusOne);
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Exception Occured in minusDate" + e);
+		}
+		return "";
 	}
 
 }
