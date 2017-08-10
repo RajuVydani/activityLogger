@@ -175,20 +175,25 @@ public class Agent {
 	/**
 	 * 
 	 */
-	public String hcmSupervisor;
+	public String hcmSupervisorId;
+	public String hcmSupervisorName;
 
-	/**
-	 * @return
-	 */
-	public String getHcmSupervisor() {
-		return hcmSupervisor;
+ 
+
+	public String getHcmSupervisorId() {
+		return hcmSupervisorId;
 	}
 
-	/**
-	 * @param hcmSupervisor
-	 */
-	public void setHcmSupervisor(String hcmSupervisor) {
-		this.hcmSupervisor = hcmSupervisor;
+	public void setHcmSupervisorId(String hcmSupervisorId) {
+		this.hcmSupervisorId = hcmSupervisorId;
+	}
+
+	public String getHcmSupervisorName() {
+		return hcmSupervisorName;
+	}
+
+	public void setHcmSupervisorName(String hcmSupervisorName) {
+		this.hcmSupervisorName = hcmSupervisorName;
 	}
 
 	/**
@@ -427,5 +432,22 @@ public class Agent {
 	public void setIdleHours(String idleHours) {
 		this.idleHours = idleHours;
 	}
+	private String billable;
+	public String getBillable() {
+		return billable;
+	}
 
+	public void setBillable(String billable) {
+		this.billable = billable;
+	}
+
+	public String getOnshoreOffshore() {
+		return onshoreOffshore;
+	}
+
+	public void setOnshoreOffshore(String onshoreOffshore) {
+		this.onshoreOffshore = onshoreOffshore;
+	}
+
+	private String onshoreOffshore;
 }

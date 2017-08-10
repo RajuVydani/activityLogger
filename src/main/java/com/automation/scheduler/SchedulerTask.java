@@ -72,22 +72,30 @@ public class SchedulerTask {
 							String ShiftTimings = "";
 							String projectId = "";
 							String location = "";
-							String HCM_Supervisor = "";
-
+							String hcmSupervisorId = "";
+							String hcmSupervisorName = "";
+							String billable = "";
+							String onshoreOffshore = "";
 							for (Agent e1 : agentdetails) {
 								agentName = e1.getName();
 								ShiftTimings = e1.getShiftTimings();
 								projectId = e1.getProjectId();
 								location = e1.getLocation();
-								HCM_Supervisor = e1.getHcmSupervisor();
-
+								hcmSupervisorId = e1.getHcmSupervisorId();
+								hcmSupervisorName= e1.getHcmSupervisorName();
+								billable = e1.getBillable();
+								onshoreOffshore = e1.getBillable();
+								
 							}
 							logger.info("agentName " + agentName);
 							logger.info("ShiftTimings " + ShiftTimings);
 							logger.info("projectId " + projectId);
 							logger.info("location " + location);
-							logger.info("HCM_Supervisor " + HCM_Supervisor);
-
+							logger.info("HCM_Supervisor Id " + hcmSupervisorId);
+							logger.info("HCM_Supervisor Name" + hcmSupervisorName);
+							logger.info("Billable " + billable);
+							logger.info("onshoreOffshore" + onshoreOffshore);
+							
 							if (agentName.trim().equalsIgnoreCase("")) {
 								Agent dataInsertInException = new Agent();
 								dataInsertInException.setEmailId(emailId);
@@ -183,7 +191,10 @@ public class SchedulerTask {
 								dataInsertionInDayMaster.setActivityHrs(activityHrs);
 								dataInsertionInDayMaster.setShiftTimings(ShiftTimings);
 								dataInsertionInDayMaster.setProjectId(projectId);
-								dataInsertionInDayMaster.setHcmSupervisor(HCM_Supervisor);
+								dataInsertionInDayMaster.setHcmSupervisorId(hcmSupervisorId);
+								dataInsertionInDayMaster.setHcmSupervisorName(hcmSupervisorName);
+								dataInsertionInDayMaster.setBillable(billable);
+								dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 								dataInsertionInDayMaster.setLocation(location);
 								dataInsertionInDayMaster.setName(agentName);
 								int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
@@ -244,21 +255,29 @@ public class SchedulerTask {
 					String ShiftTimings = "";
 					String projectId = "";
 					String location = "";
-					String HCM_Supervisor = "";
-
+					String hcmSupervisorId = "";
+					String hcmSupervisorName = "";
+					String billable = "";
+					String onshoreOffshore = "";
 					for (Agent e1 : agentdetails) {
 						agentName = e1.getName();
 						ShiftTimings = e1.getShiftTimings();
 						projectId = e1.getProjectId();
 						location = e1.getLocation();
-						HCM_Supervisor = e1.getHcmSupervisor();
-
+						hcmSupervisorId = e1.getHcmSupervisorId();
+						hcmSupervisorName= e1.getHcmSupervisorName();
+						billable = e1.getBillable();
+						onshoreOffshore = e1.getBillable();
+						
 					}
 					logger.info("agentName " + agentName);
 					logger.info("ShiftTimings " + ShiftTimings);
 					logger.info("projectId " + projectId);
 					logger.info("location " + location);
-					logger.info("HCM_Supervisor " + HCM_Supervisor);
+					logger.info("HCM_Supervisor Id " + hcmSupervisorId);
+					logger.info("HCM_Supervisor Name" + hcmSupervisorName);
+					logger.info("Billable " + billable);
+					logger.info("onshoreOffshore" + onshoreOffshore);
 
 					if (agentName.trim().equalsIgnoreCase("")) {
 						Agent dataInsertInException = new Agent();
@@ -356,7 +375,10 @@ public class SchedulerTask {
 						dataInsertionInDayMaster.setActivityHrs(activityHrs);
 						dataInsertionInDayMaster.setShiftTimings(ShiftTimings);
 						dataInsertionInDayMaster.setProjectId(projectId);
-						dataInsertionInDayMaster.setHcmSupervisor(HCM_Supervisor);
+						dataInsertionInDayMaster.setHcmSupervisorId(hcmSupervisorId);
+						dataInsertionInDayMaster.setHcmSupervisorName(hcmSupervisorName);
+						dataInsertionInDayMaster.setBillable(billable);
+						dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 						dataInsertionInDayMaster.setLocation(location);
 						dataInsertionInDayMaster.setName(agentName);
 						int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
@@ -431,21 +453,29 @@ public class SchedulerTask {
 							String ShiftTimings = "";
 							String projectId = "";
 							String location = "";
-							String HCM_Supervisor = "";
-
+							String hcmSupervisorId = "";
+							String hcmSupervisorName = "";
+							String billable = "";
+							String onshoreOffshore = "";
 							for (Agent e1 : agentdetails) {
 								agentName = e1.getName();
 								ShiftTimings = e1.getShiftTimings();
 								projectId = e1.getProjectId();
 								location = e1.getLocation();
-								HCM_Supervisor = e1.getHcmSupervisor();
-
+								hcmSupervisorId = e1.getHcmSupervisorId();
+								hcmSupervisorName= e1.getHcmSupervisorName();
+								billable = e1.getBillable();
+								onshoreOffshore = e1.getBillable();
+								
 							}
 							logger.info("agentName " + agentName);
 							logger.info("ShiftTimings " + ShiftTimings);
 							logger.info("projectId " + projectId);
 							logger.info("location " + location);
-							logger.info("HCM_Supervisor " + HCM_Supervisor);
+							logger.info("HCM_Supervisor Id " + hcmSupervisorId);
+							logger.info("HCM_Supervisor Name" + hcmSupervisorName);
+							logger.info("Billable " + billable);
+							logger.info("onshoreOffshore" + onshoreOffshore);
 
 							if (agentName.trim().equalsIgnoreCase("")) {
 								logger.info("Email Id is missing in Agent Master");
@@ -527,7 +557,10 @@ public class SchedulerTask {
 								dataInsertionInDayMaster.setActivityHrs(activityHrs);
 								dataInsertionInDayMaster.setShiftTimings(ShiftTimings);
 								dataInsertionInDayMaster.setProjectId(projectId);
-								dataInsertionInDayMaster.setHcmSupervisor(HCM_Supervisor);
+								dataInsertionInDayMaster.setHcmSupervisorId(hcmSupervisorId);
+								dataInsertionInDayMaster.setHcmSupervisorName(hcmSupervisorName);
+								dataInsertionInDayMaster.setBillable(billable);
+								dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 								dataInsertionInDayMaster.setLocation(location);
 								dataInsertionInDayMaster.setName(agentName);
 
@@ -589,21 +622,29 @@ public class SchedulerTask {
 					String ShiftTimings = "";
 					String projectId = "";
 					String location = "";
-					String HCM_Supervisor = "";
-
+					String hcmSupervisorId = "";
+					String hcmSupervisorName = "";
+					String billable = "";
+					String onshoreOffshore = "";
 					for (Agent e1 : agentdetails) {
 						agentName = e1.getName();
 						ShiftTimings = e1.getShiftTimings();
 						projectId = e1.getProjectId();
 						location = e1.getLocation();
-						HCM_Supervisor = e1.getHcmSupervisor();
-
+						hcmSupervisorId = e1.getHcmSupervisorId();
+						hcmSupervisorName= e1.getHcmSupervisorName();
+						billable = e1.getBillable();
+						onshoreOffshore = e1.getBillable();
+						
 					}
 					logger.info("agentName " + agentName);
 					logger.info("ShiftTimings " + ShiftTimings);
 					logger.info("projectId " + projectId);
 					logger.info("location " + location);
-					logger.info("HCM_Supervisor " + HCM_Supervisor);
+					logger.info("HCM_Supervisor Id " + hcmSupervisorId);
+					logger.info("HCM_Supervisor Name" + hcmSupervisorName);
+					logger.info("Billable " + billable);
+					logger.info("onshoreOffshore" + onshoreOffshore);
 
 					if (agentName.trim().equalsIgnoreCase("")) {
 						logger.info("Email Id is missing in Agent Master");
@@ -684,7 +725,10 @@ public class SchedulerTask {
 						dataInsertionInDayMaster.setActivityHrs(activityHrs);
 						dataInsertionInDayMaster.setShiftTimings(ShiftTimings);
 						dataInsertionInDayMaster.setProjectId(projectId);
-						dataInsertionInDayMaster.setHcmSupervisor(HCM_Supervisor);
+						dataInsertionInDayMaster.setHcmSupervisorId(hcmSupervisorId);
+						dataInsertionInDayMaster.setHcmSupervisorName(hcmSupervisorName);
+						dataInsertionInDayMaster.setBillable(billable);
+						dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 						dataInsertionInDayMaster.setLocation(location);
 						dataInsertionInDayMaster.setName(agentName);
 

@@ -99,7 +99,7 @@ public interface IAgentDAO {
 	 * @param toDate
 	 * @return
 	 */
-	List<Agent> FetchAgentsInfoDayWise(String managerName, String fromDate, String toDate);
+	List<Agent> fetchAgentsInfoDayWise(String managerName, String fromDate, String toDate);
 
 	/**
 	 * @param managerName
@@ -107,7 +107,7 @@ public interface IAgentDAO {
 	 * @param toDate
 	 * @return
 	 */
-	List<Agent> FetchAgentsInfoOverall(String managerName, String fromDate, String toDate);
+	List<Agent> fetchAgentsInfoOverall(String managerName, String fromDate, String toDate);
 
 	/**
 	 * @param email_id
@@ -115,32 +115,32 @@ public interface IAgentDAO {
 	 * @param logOutTime
 	 * @return
 	 */
-	List<Agent> FetchAgentsTransacation(String email_id, String loginTime, String logOutTime);
+	List<Agent> fetchAgentsTransacation(String email_id, String loginTime, String logOutTime);
 
 	/**
 	 * @param emailid
 	 * @param date
 	 * @return
 	 */
-	List<Agent> FetchAgentsLoginLogoutTime(String emailid, String date);
+	List<Agent> fetchAgentsLoginLogoutTime(String emailid, String date);
 
 	/**
 	 * @param managerName
 	 * @return
 	 */
-	List<Agent> FetchAgentsProjectId(String managerName);
+	List<Agent> fetchAgentsProjectId(String managerName);
 
 	/**
 	 * @param managerName
 	 * @return
 	 */
-	List<Agent> FetchAgentsLocation(String managerName);
+	List<Agent> fetchAgentsLocation(String managerName);
 
 	/**
 	 * @param managerName
 	 * @return
 	 */
-	List<Agent> FetchAgentsShiftTimings(String managerName);
+	List<Agent> fetchAgentsShiftTimings(String managerName);
 
 	/**
 	 * @param managerName
@@ -151,8 +151,7 @@ public interface IAgentDAO {
 	 * @param ShiftTimings
 	 * @return
 	 */
-	List<Agent> FetchAgentsInfoFilterSpecific(String managerName, String fromDate, String toDate, String projectId,
-			String Location, String ShiftTimings);
+	List<Agent> fetchAgentsInfoFilterSpecific(Agent e);
 
 	/**
 	 * @param emailid

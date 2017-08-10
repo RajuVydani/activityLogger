@@ -34,7 +34,7 @@ public class AgentController {
 	@Autowired
 	private IAgentDAO agentDAO;
 
-	private static final Logger logger = Logger.getLogger(AgentController.class);
+	private static final Logger LOGGER = Logger.getLogger(AgentController.class);
 
 	/**
 	 * Displays Policy update page. New policy updates will be feeded in to the
@@ -45,7 +45,7 @@ public class AgentController {
 	 */
 	@RequestMapping(value = "/policy", method = RequestMethod.GET)
 	public ModelAndView policy() throws Exception {
-		logger.info("In policy()....");
+		LOGGER.info("In policy()....");
 		ModelAndView model = new ModelAndView("policyupdate");
 		model.addObject("policyUpdateActive", AppConstants.active);
 		return model;
@@ -61,10 +61,10 @@ public class AgentController {
 	 */
 	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
 	public ModelAndView authenticate(@ModelAttribute("loginParam") Login login) throws Exception {
-		logger.info("In authenticate()....");
+		LOGGER.info("In authenticate()....");
 
 		String managerName = login.getUsername();
-		List<Agent> managerProjectDetails = agentDAO.FetchAgentsProjectId(managerName.trim());
+		List<Agent> managerProjectDetails = agentDAO.fetchAgentsProjectId(managerName.trim());
 
 		List<String> projectlist = new ArrayList<String>();
 
@@ -74,9 +74,10 @@ public class AgentController {
 				projectlist.add(e.getProjectId().trim());
 			}
 		}
-		logger.info("projectlist" + projectlist);
-
-		List<Agent> locationDetails = agentDAO.FetchAgentsLocation(managerName);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("projectlist" + projectlist);
+		  }
+		List<Agent> locationDetails = agentDAO.fetchAgentsLocation(managerName);
 
 		List<String> locationlist = new ArrayList<String>();
 
@@ -86,22 +87,22 @@ public class AgentController {
 				locationlist.add(e.getProjectId().trim());
 			}
 		}
-
-		logger.info("locationlist" + locationlist);
-
-		List<Agent> ShiftDetails = agentDAO.FetchAgentsShiftTimings(managerName);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("locationlist" + locationlist);
+		  }
+		List<Agent> shiftDetails = agentDAO.fetchAgentsShiftTimings(managerName);
 
 		List<String> shiftTimingslist = new ArrayList<String>();
 
-		for (Agent e : ShiftDetails) {
+		for (Agent e : shiftDetails) {
 
 			if (!e.getProjectId().trim().equalsIgnoreCase("")) {
 				shiftTimingslist.add(e.getProjectId().trim());
 			}
 		}
-
-		logger.info("shiftTimingslist" + shiftTimingslist);
-
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("shiftTimingslist" + shiftTimingslist);
+		  }
 		ModelAndView modelAndView = new ModelAndView("dashboard");
 		modelAndView.addObject("projectlist", projectlist);
 		modelAndView.addObject("locationlist", locationlist);
@@ -126,17 +127,19 @@ public class AgentController {
 	 */
 	@RequestMapping(value = "/filter", method = RequestMethod.POST)
 	public ModelAndView filter(@ModelAttribute("loginParam") Agent agent) throws Exception {
-		logger.info("In filter()....");
-		logger.info("fromDate==" + agent.getFromDate());
-		logger.info("toDate==" + agent.getToDate());
-		logger.info("Manger Name==" + agent.getHcmSupervisor());
-		logger.info("Project Id==" + agent.getProjectId());
-		logger.info("Location==" + agent.getLocation());
-		logger.info("Shift Details==" + agent.getShiftTimings());
-		String managerName = agent.getHcmSupervisor();
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("In filter()....");
+		LOGGER.info("fromDate==" + agent.getFromDate());
+		LOGGER.info("toDate==" + agent.getToDate());
+		LOGGER.info("Manger Name==" + agent.getHcmSupervisorName());
+		LOGGER.info("Project Id==" + agent.getProjectId());
+		LOGGER.info("Location==" + agent.getLocation());
+		LOGGER.info("Shift Details==" + agent.getShiftTimings());
+		  }
+		String managerName = agent.getHcmSupervisorName();
 		String projectId = agent.getProjectId();
 	    String location = agent.getLocation();
-		String ShiftTimings = agent.getShiftTimings();
+		String shiftTimings = agent.getShiftTimings();
 
 		Calendar now = Calendar.getInstance();
 
@@ -149,15 +152,15 @@ public class AgentController {
 
 		// Get the number of days in that month
 		int daysInMonth = mycal.getActualMaximum(Calendar.DAY_OF_MONTH);
-		String updated_month = "";
+		String updatedMonth = "";
 		String firstDate = "";
 		String lastDate = "";
 
 		if (((iMonth + 1) < 10)) {
-			updated_month = "0" + String.valueOf((iMonth + 1));
+			updatedMonth = "0" + String.valueOf((iMonth + 1));
 
 		} else {
-			updated_month = String.valueOf((iMonth + 1));
+			updatedMonth = String.valueOf((iMonth + 1));
 
 		}
 
@@ -179,8 +182,10 @@ public class AgentController {
 
 		String fromDate = agent.getFromDate();
 		String toDate = agent.getToDate();
-		logger.info("fromDate" + fromDate);
-		logger.info("toDate" + toDate);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("fromDate" + fromDate);
+		LOGGER.info("toDate" + toDate);
+		  }
 		String[] fromDatesplit = fromDate.split("-");
 		String[] toDatesplit = toDate.split("-");
 		String fromDateFormatted = fromDatesplit[2] + "/" + fromDatesplit[1] + "/" + fromDatesplit[0];
@@ -190,32 +195,44 @@ public class AgentController {
 		// agentDAO.FetchAgentsInfoDayWise(managerName.trim(),fromDate,toDate));
 		List<Agent> agentOverAlldetails;
 		if (projectId.trim().equalsIgnoreCase("") && location.trim().equalsIgnoreCase("")
-				&& ShiftTimings.trim().equalsIgnoreCase("")) {
-			agentOverAlldetails = agentDAO.FetchAgentsInfoOverall(managerName.trim(), fromDate, toDate);
+				&& shiftTimings.trim().equalsIgnoreCase("")) {
+			agentOverAlldetails = agentDAO.fetchAgentsInfoOverall(managerName.trim(), fromDate, toDate);
 		} else {
-			agentOverAlldetails = agentDAO.FetchAgentsInfoFilterSpecific(managerName.trim(), fromDate, toDate,
-					projectId.trim(), location.trim(), ShiftTimings.trim());
+			Agent agentInput=new Agent();
+			agentInput.setHcmSupervisorName(managerName.trim());
+			agentInput.setFromDate(fromDate);
+			agentInput.setToDate(toDate);
+			agentInput.setProjectId(projectId.trim());
+			agentInput.setLocation(location.trim());
+			agentInput.setShiftTimings(shiftTimings.trim());
+			agentOverAlldetails = agentDAO.fetchAgentsInfoFilterSpecific(agentInput);
 		}
 
-		String DefaultFromDate = "";
-		String DefaultToDate = "";
+		String defaultFromDate = "";
+		String defaultToDate = "";
 
 		if (!fromDate.trim().equalsIgnoreCase("")) {
 			DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
 			// Convert String to Date
 			Date date = sdf.parse(fromDateFormatted);
-			logger.info("Date is:" + date.toString());
-			DefaultFromDate = new SimpleDateFormat("dd MMM yyyy").format(date);
+			{
+				  if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Date is:" + date.toString());
+				  }
+			}
+			defaultFromDate = new SimpleDateFormat("dd MMM yyyy").format(date);
 
 		}
 		if (!toDate.trim().equalsIgnoreCase("")) {
 			DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date date = sdf.parse(toDateFormatted);
-			logger.info("Date is:" + date.toString());
-			DefaultToDate = new SimpleDateFormat("dd MMM yyyy").format(date);
+			  if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Date is:" + date.toString());
+			  }
+			defaultToDate = new SimpleDateFormat("dd MMM yyyy").format(date);
 		}
-		List<Agent> managerProjectDetails = agentDAO.FetchAgentsProjectId(managerName.trim());
+		List<Agent> managerProjectDetails = agentDAO.fetchAgentsProjectId(managerName.trim());
 
 		List<String> projectlist = new ArrayList<String>();
 
@@ -225,9 +242,11 @@ public class AgentController {
 				projectlist.add(e.getProjectId().trim());
 			}
 		}
-		logger.info("projectlist" + projectlist);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("projectlist" + projectlist);
+		  }
 
-		List<Agent> locationDetails = agentDAO.FetchAgentsLocation(managerName);
+		List<Agent> locationDetails = agentDAO.fetchAgentsLocation(managerName);
 
 		List<String> locationlist = new ArrayList<String>();
 
@@ -237,23 +256,24 @@ public class AgentController {
 				locationlist.add(e.getProjectId().trim());
 			}
 		}
-
-		logger.info("locationlist" + locationlist);
-
-		List<Agent> ShiftDetails = agentDAO.FetchAgentsShiftTimings(managerName);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("locationlist" + locationlist);
+		  }
+		List<Agent> shiftDetails = agentDAO.fetchAgentsShiftTimings(managerName);
 
 		List<String> shiftTimingslist = new ArrayList<String>();
 
-		for (Agent e : ShiftDetails) {
+		for (Agent e : shiftDetails) {
 
 			if (!e.getProjectId().trim().equalsIgnoreCase("")) {
 				shiftTimingslist.add(e.getProjectId().trim());
 			}
 		}
-
-		logger.info("shiftTimingslist" + shiftTimingslist);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("shiftTimingslist" + shiftTimingslist);
+		  }
 		Map<String, Object> model = new HashMap<String, Object>();
-		String filerMessage = "Agent Details From " + DefaultFromDate + " To " + DefaultToDate;
+		String filerMessage = "Agent Details From " + defaultFromDate + " To " + defaultToDate;
 		/*
 		 * if(!projectId.trim().equalsIgnoreCase("")) {
 		 * filerMessage=filerMessage+"<BR> Project ID - "+projectId; }
@@ -263,14 +283,15 @@ public class AgentController {
 		 * filerMessage=filerMessage+"<BR>  Shift Timings - "+ShiftTimings; }
 		 */
 
-		model.put("DefaultFromDate", DefaultFromDate);
-		model.put("DefaultToDate", DefaultToDate);
+		model.put("DefaultFromDate", defaultFromDate);
+		model.put("DefaultToDate", defaultToDate);
 		model.put("ManagerName", managerName.trim());
 		model.put("FilterMessage", filerMessage);
 		modelAndView.addObject("agentOverAllList", agentOverAlldetails);
 		modelAndView.addObject("displayList", model);
-
-		logger.info("FilterMessage" + filerMessage);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("FilterMessage" + filerMessage);
+		  }
 		modelAndView.addObject("projectlist", projectlist);
 		modelAndView.addObject("locationlist", locationlist);
 		modelAndView.addObject("shiftTimingslist", shiftTimingslist);
@@ -287,15 +308,15 @@ public class AgentController {
 		DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 
 		// Convert String to Date
-		Date Formatteddate = null;
+		Date formattedDate = null;
 		try {
-			Formatteddate = sdf.parse(date);
+			formattedDate = sdf.parse(date);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return Formatteddate.toString();
+		return formattedDate.toString();
 
 	}
 
@@ -318,7 +339,7 @@ public class AgentController {
 
 			formatter = new SimpleDateFormat("dd MMM yyyy");
 			convertedDate = (Date) formatter.parse(date);
-			System.out.println("Date from yyyyMMdd String in Java : " + convertedDate);
+			LOGGER.info("Date from yyyyMMdd String in Java : " + convertedDate);
 			formatDate = new SimpleDateFormat("yyyy-MM-dd").format(convertedDate);
 
 		} catch (ParseException e) {
@@ -334,51 +355,55 @@ public class AgentController {
 	public ModelAndView daytransacion(@RequestParam("id") String emailId,
 			@RequestParam("fromdate") String fromDateFormatted, @RequestParam("todate") String toDateFormatted)
 			throws Exception {
-		logger.info("In daytransacion()...." + emailId);
+		
 		emailId = URLDecoder.decode(emailId, "UTF-8");
 		fromDateFormatted = URLDecoder.decode(fromDateFormatted, "UTF-8");
 		toDateFormatted = URLDecoder.decode(toDateFormatted, "UTF-8");
+		  if (LOGGER.isInfoEnabled()) {
+	    LOGGER.info("In daytransacion()...." + emailId);
+		LOGGER.info("deocded email" + URLDecoder.decode(emailId, "UTF-8"));
+		LOGGER.info("decoded from date " + URLDecoder.decode(fromDateFormatted, "UTF-8"));
+		LOGGER.info("decoded To date " + URLDecoder.decode(toDateFormatted, "UTF-8"));
 
-		logger.info("deocded email" + URLDecoder.decode(emailId, "UTF-8"));
-		logger.info("decoded from date " + URLDecoder.decode(fromDateFormatted, "UTF-8"));
-		logger.info("decoded To date " + URLDecoder.decode(toDateFormatted, "UTF-8"));
-
+		LOGGER.info("agentDAO" + agentDAO);
+		LOGGER.info("emailId" + emailId);
+		
+		  }
 		int count = 0;
 
-		logger.info("agentDAO" + agentDAO);
-		logger.info("emailId" + emailId);
 
-		List<Agent> agentdaywisedetails = agentDAO.FetchAgentsInfoDayWise(emailId.trim(),
+		List<Agent> agentdaywisedetails = agentDAO.fetchAgentsInfoDayWise(emailId.trim(),
 				dateFormatRevert(fromDateFormatted), dateFormatRevert(toDateFormatted));
 		count = 0;
-		String loginTime = "";
-		String logoutTime = "";
-		String DATE = "";
+	 
+		String loginDate = "";
 
-		String DefaultFromDate = "";
-		String DefaultToDate = "";
-		String DefaultCurrentDate = "";
-		String DefaultAgentEmailId = "";
+		String defaultFromDate = "";
+		String defaultToDate = "";
+		String defaultCurrentDate = "";
+		String defaultAgentEmailId = "";
 
 		if (!emailId.trim().equalsIgnoreCase("")) {
-			DefaultAgentEmailId = emailId;
+			defaultAgentEmailId = emailId;
 		}
 		if (!fromDateFormatted.trim().equalsIgnoreCase("")) {
 
-			DefaultFromDate = fromDateFormatted;
+			defaultFromDate = fromDateFormatted;
 
 		}
 		if (!toDateFormatted.trim().equalsIgnoreCase("")) {
 
-			DefaultToDate = toDateFormatted;
+			defaultToDate = toDateFormatted;
 		}
 
-		if (!DATE.trim().equalsIgnoreCase("")) {
-			String[] splitdate = DATE.split("-");
+		if (!loginDate.trim().equalsIgnoreCase("")) {
+			String[] splitdate = loginDate.split("-");
 			DateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			Date date = sdf.parse(splitdate[2] + "/" + splitdate[1] + "/" + splitdate[0]);
-			logger.info("Date is:" + date.toString());
-			DefaultCurrentDate = new SimpleDateFormat("dd MMM yyyy").format(date);
+			  if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Date is:" + date.toString());
+			  }
+			defaultCurrentDate = new SimpleDateFormat("dd MMM yyyy").format(date);
 		}
 
 		Map<String, Object> model = new HashMap<String, Object>();
@@ -386,7 +411,7 @@ public class AgentController {
 		model.put("DefaultFromDate", fromDateFormatted);
 		model.put("DefaultToDate", toDateFormatted);
 
-		model.put("DefaultAgentEmailId", DefaultAgentEmailId);
+		model.put("DefaultAgentEmailId", defaultAgentEmailId);
 		ModelAndView modelAndView = new ModelAndView("daytransaction");
 		modelAndView.addObject("displayList", model);
 
@@ -404,37 +429,36 @@ public class AgentController {
 		fromDateFormatted = URLDecoder.decode(fromDateFormatted, "UTF-8");
 		toDateFormatted = URLDecoder.decode(toDateFormatted, "UTF-8");
 		transactiondate = URLDecoder.decode(transactiondate, "UTF-8");
-
-		logger.info("deocded email" + URLDecoder.decode(emailId, "UTF-8"));
-		logger.info("decoded from date " + URLDecoder.decode(fromDateFormatted, "UTF-8"));
-		logger.info("decoded To date " + URLDecoder.decode(toDateFormatted, "UTF-8"));
-		logger.info("decoded transactiondate" + URLDecoder.decode(transactiondate, "UTF-8"));
-
-		List<Agent> agenttransactiondetails = agentDAO.FetchAgentsLoginLogoutTime(emailId.trim(),
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("deocded email" + URLDecoder.decode(emailId, "UTF-8"));
+		LOGGER.info("decoded from date " + URLDecoder.decode(fromDateFormatted, "UTF-8"));
+		LOGGER.info("decoded To date " + URLDecoder.decode(toDateFormatted, "UTF-8"));
+		LOGGER.info("decoded transactiondate" + URLDecoder.decode(transactiondate, "UTF-8"));
+		  }
+		List<Agent> agenttransactiondetails = agentDAO.fetchAgentsLoginLogoutTime(emailId.trim(),
 				dateFormatRevert(transactiondate));
 		ModelAndView modelAndView = new ModelAndView("idletransaction");
 		String loginTime = "";
 		String logoutTime = "";
-		String DATE = "";
+		String date = "";
 		for (Agent e : agenttransactiondetails) {
 
-			DATE = e.getDATE();
+			date = e.getDATE();
 			loginTime = e.getLoginTime();
 			logoutTime = e.getLogoutTime();
 
 		}
 
-		String DefaultAgentName = "";
-		String DefaultFromDate = "";
-		String DefaultToDate = "";
-		String DefaultCurrentDate = "";
-		String DefaultAgentEmailId = "";
+	 
+ 
+		String defaultAgentEmailId = "";
 
 		if (!emailId.trim().equalsIgnoreCase("")) {
-			DefaultAgentEmailId = emailId;
+			defaultAgentEmailId = emailId;
 		}
-
-		logger.info("email id" + DefaultAgentEmailId);
+		  if (LOGGER.isInfoEnabled()) {
+		LOGGER.info("email id" + defaultAgentEmailId);
+		  }
 		Map<String, Object> model = new HashMap<String, Object>();
 
 		model.put("DefaultAgentEmailId", emailId.trim());
@@ -445,7 +469,7 @@ public class AgentController {
 		modelAndView.addObject("displayList", model);
 
 		modelAndView.addObject("agentTransactionList",
-				agentDAO.FetchAgentsTransacation(emailId.trim(), loginTime, logoutTime));
+				agentDAO.fetchAgentsTransacation(emailId.trim(), loginTime, logoutTime));
 
 		return modelAndView;
 		// Dashboard Page
