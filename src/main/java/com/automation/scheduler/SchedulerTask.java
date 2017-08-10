@@ -84,7 +84,7 @@ public class SchedulerTask {
 								hcmSupervisorId = e1.getHcmSupervisorId();
 								hcmSupervisorName= e1.getHcmSupervisorName();
 								billable = e1.getBillable();
-								onshoreOffshore = e1.getBillable();
+								onshoreOffshore = e1.getOnshoreOffshore();
 								
 							}
 							logger.info("agentName " + agentName);
@@ -267,7 +267,7 @@ public class SchedulerTask {
 						hcmSupervisorId = e1.getHcmSupervisorId();
 						hcmSupervisorName= e1.getHcmSupervisorName();
 						billable = e1.getBillable();
-						onshoreOffshore = e1.getBillable();
+						onshoreOffshore = e1.getOnshoreOffshore();
 						
 					}
 					logger.info("agentName " + agentName);
@@ -465,7 +465,7 @@ public class SchedulerTask {
 								hcmSupervisorId = e1.getHcmSupervisorId();
 								hcmSupervisorName= e1.getHcmSupervisorName();
 								billable = e1.getBillable();
-								onshoreOffshore = e1.getBillable();
+								onshoreOffshore = e1.getOnshoreOffshore();
 								
 							}
 							logger.info("agentName " + agentName);
@@ -634,7 +634,7 @@ public class SchedulerTask {
 						hcmSupervisorId = e1.getHcmSupervisorId();
 						hcmSupervisorName= e1.getHcmSupervisorName();
 						billable = e1.getBillable();
-						onshoreOffshore = e1.getBillable();
+						onshoreOffshore = e1.getOnshoreOffshore();
 						
 					}
 					logger.info("agentName " + agentName);

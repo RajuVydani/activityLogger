@@ -250,7 +250,7 @@ public class AgentDAO implements IAgentDAO {
 		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PROD`,`IDLE`,`BREAK`,`MEALS`,`HUDDLE`,`WELLNESS_SUPPORT`,`COACHING`,`TEAM_MEETING`,`FB_TRAINING`,`NON_FB_TRAINING`,`LOCATION`,`HCM_SUPERVISOR_ID`,`HCM_SUPERVISOR_NAME`,`PROJECT_ID`,`BILLABLE`,`ON_OFF`) values('"
 				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"
 				+ e.getLoginTime() + "','" + e.getLogoutTime() + "'," + e.getActivityHrs() + ",'" + e.getLocation()
-				+ "','" + e.getHcmSupervisorId() + "','"  + "','" + e.getHcmSupervisorName() + "','" +e.getProjectId() + "','"+e.getBillable()+"','"+e.getOnshoreOffshore()+"')";
+				+ "','" + e.getHcmSupervisorId() + "','" + e.getHcmSupervisorName() + "','" +e.getProjectId() + "','"+e.getBillable()+"','"+e.getOnshoreOffshore()+"')";
 		  if (LOGGER.isInfoEnabled()) {
 		LOGGER.info("query==" + query);
 		  }
