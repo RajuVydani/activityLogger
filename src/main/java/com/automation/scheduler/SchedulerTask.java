@@ -76,6 +76,7 @@ public class SchedulerTask {
 							String hcmSupervisorName = "";
 							String billable = "";
 							String onshoreOffshore = "";
+							String agentId = "";
 							for (Agent e1 : agentdetails) {
 								agentName = e1.getName();
 								ShiftTimings = e1.getShiftTimings();
@@ -85,6 +86,7 @@ public class SchedulerTask {
 								hcmSupervisorName= e1.getHcmSupervisorName();
 								billable = e1.getBillable();
 								onshoreOffshore = e1.getOnshoreOffshore();
+								agentId=e1.getAgentId();
 								
 							}
 							logger.info("agentName " + agentName);
@@ -95,6 +97,7 @@ public class SchedulerTask {
 							logger.info("HCM_Supervisor Name" + hcmSupervisorName);
 							logger.info("Billable " + billable);
 							logger.info("onshoreOffshore" + onshoreOffshore);
+							logger.info("agentId" + agentId);
 							
 							if (agentName.trim().equalsIgnoreCase("")) {
 								Agent dataInsertInException = new Agent();
@@ -197,6 +200,7 @@ public class SchedulerTask {
 								dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 								dataInsertionInDayMaster.setLocation(location);
 								dataInsertionInDayMaster.setName(agentName);
+								dataInsertionInDayMaster.setAgentId(agentId);
 								int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
 
 								if (inserStatus >= 0) {
@@ -207,11 +211,19 @@ public class SchedulerTask {
 									dataInsertInDayDetail.setFromDate(LoginTime);
 									dataInsertInDayDetail.setToDate(LastTransactionToTime);
 
-									int insertInDayDetailStatus = agentDAO
-											.dataInsertionInDayDetailFromTempDetails(dataInsertInDayDetail);
-
-									if (insertInDayDetailStatus >= 0) {
+									List<Agent> chromeTempDetails = agentDAO
+											.fetchdataFromChromeTempDetails(dataInsertInDayDetail);
+									for (Agent chromeTempList : chromeTempDetails) {
+										
+										int insertInDayDetailStatus=agentDAO.dataInsertionInDayDetail(chromeTempList,LoginDateUpdated);
+										if (insertInDayDetailStatus >= 0) {
+											logger.info("Data is Successfully Inserted in Day Detail Table");
+											logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+										}
+									}
+						 
 										Agent datadeleteInChromeTemp = new Agent();
+										datadeleteInChromeTemp.setDATE(LoginDateUpdated);
 										datadeleteInChromeTemp.setEmailId(emailId);
 										datadeleteInChromeTemp.setFromDate(LoginTime);
 										datadeleteInChromeTemp.setToDate(LastTransactionToTime);
@@ -221,7 +233,7 @@ public class SchedulerTask {
 											logger.info("No Of Rows Deleted :" + deleteStatus);
 										}
 
-									}
+								 
 
 								}
 
@@ -259,6 +271,7 @@ public class SchedulerTask {
 					String hcmSupervisorName = "";
 					String billable = "";
 					String onshoreOffshore = "";
+					String agentId = "";
 					for (Agent e1 : agentdetails) {
 						agentName = e1.getName();
 						ShiftTimings = e1.getShiftTimings();
@@ -268,6 +281,7 @@ public class SchedulerTask {
 						hcmSupervisorName= e1.getHcmSupervisorName();
 						billable = e1.getBillable();
 						onshoreOffshore = e1.getOnshoreOffshore();
+						agentId=e1.getAgentId();
 						
 					}
 					logger.info("agentName " + agentName);
@@ -278,6 +292,7 @@ public class SchedulerTask {
 					logger.info("HCM_Supervisor Name" + hcmSupervisorName);
 					logger.info("Billable " + billable);
 					logger.info("onshoreOffshore" + onshoreOffshore);
+					logger.info("agentId" + agentId);
 
 					if (agentName.trim().equalsIgnoreCase("")) {
 						Agent dataInsertInException = new Agent();
@@ -381,6 +396,7 @@ public class SchedulerTask {
 						dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 						dataInsertionInDayMaster.setLocation(location);
 						dataInsertionInDayMaster.setName(agentName);
+						dataInsertionInDayMaster.setAgentId(agentId);
 						int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
 
 						if (inserStatus >= 0) {
@@ -392,11 +408,19 @@ public class SchedulerTask {
 							dataInsertInDayDetail.setToDate(LastTransactionToTime);
 							logger.info("From Time " + LoginTime);
 							logger.info("To Time " + LastTransactionToTime);
-							int insertInDayDetailStatus = agentDAO
-									.dataInsertionInDayDetailFromTempDetails(dataInsertInDayDetail);
-
-							if (insertInDayDetailStatus >= 0) {
+							List<Agent> chromeTempDetails = agentDAO
+									.fetchdataFromChromeTempDetails(dataInsertInDayDetail);
+							for (Agent chromeTempList : chromeTempDetails) {
+								
+								int insertInDayDetailStatus=agentDAO.dataInsertionInDayDetail(chromeTempList,LoginDateUpdated);
+								if (insertInDayDetailStatus >= 0) {
+									logger.info("Data is Successfully Inserted in Day Detail Table");
+									logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+								}
+							}
+				 
 								Agent datadeleteInChromeTemp = new Agent();
+								datadeleteInChromeTemp.setDATE(LoginDateUpdated);
 								datadeleteInChromeTemp.setEmailId(emailId);
 								datadeleteInChromeTemp.setFromDate(LoginTime);
 								datadeleteInChromeTemp.setToDate(LastTransactionToTime);
@@ -404,10 +428,7 @@ public class SchedulerTask {
 								if (deleteStatus >= 0) {
 									logger.info("Data is Successfully deleted in Chrome Detail Table");
 									logger.info("No Of Rows Deleted :" + deleteStatus);
-
 								}
-
-							}
 
 						}
 
@@ -457,6 +478,7 @@ public class SchedulerTask {
 							String hcmSupervisorName = "";
 							String billable = "";
 							String onshoreOffshore = "";
+							String agentId = "";
 							for (Agent e1 : agentdetails) {
 								agentName = e1.getName();
 								ShiftTimings = e1.getShiftTimings();
@@ -466,6 +488,7 @@ public class SchedulerTask {
 								hcmSupervisorName= e1.getHcmSupervisorName();
 								billable = e1.getBillable();
 								onshoreOffshore = e1.getOnshoreOffshore();
+								agentId=e1.getAgentId();
 								
 							}
 							logger.info("agentName " + agentName);
@@ -476,6 +499,7 @@ public class SchedulerTask {
 							logger.info("HCM_Supervisor Name" + hcmSupervisorName);
 							logger.info("Billable " + billable);
 							logger.info("onshoreOffshore" + onshoreOffshore);
+							logger.info("agentId" + agentId);
 
 							if (agentName.trim().equalsIgnoreCase("")) {
 								logger.info("Email Id is missing in Agent Master");
@@ -563,7 +587,7 @@ public class SchedulerTask {
 								dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 								dataInsertionInDayMaster.setLocation(location);
 								dataInsertionInDayMaster.setName(agentName);
-
+								dataInsertionInDayMaster.setAgentId(agentId);
 								int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
 
 								if (inserStatus >= 0) {
@@ -574,11 +598,19 @@ public class SchedulerTask {
 									dataInsertInDayDetail.setFromDate(LoginTime);
 									dataInsertInDayDetail.setToDate(LastTransactionToTime);
 
-									int insertInDayDetailStatus = agentDAO
-											.dataInsertionInDayDetailFromExceptionDetails(dataInsertInDayDetail);
-
-									if (insertInDayDetailStatus >= 0) {
+									List<Agent> chromeTempDetails = agentDAO
+											.fetchdataFromChromeExceptionDetails(dataInsertInDayDetail);
+									for (Agent chromeTempList : chromeTempDetails) {
+										
+										int insertInDayDetailStatus=agentDAO.dataInsertionInDayDetail(chromeTempList,LoginDateUpdated);
+										if (insertInDayDetailStatus >= 0) {
+											logger.info("Data is Successfully Inserted in Day Detail Table");
+											logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+										}
+									}
+						 
 										Agent datadeleteInChromeTemp = new Agent();
+										datadeleteInChromeTemp.setDATE(LoginDateUpdated);
 										datadeleteInChromeTemp.setEmailId(emailId);
 										datadeleteInChromeTemp.setFromDate(LoginTime);
 										datadeleteInChromeTemp.setToDate(LastTransactionToTime);
@@ -586,10 +618,7 @@ public class SchedulerTask {
 										if (deleteStatus >= 0) {
 											logger.info("Data is Successfully deleted in Chrome Exception Table");
 											logger.info("No Of Rows Deleted :" + deleteStatus);
-
 										}
-
-									}
 
 								}
 
@@ -626,6 +655,7 @@ public class SchedulerTask {
 					String hcmSupervisorName = "";
 					String billable = "";
 					String onshoreOffshore = "";
+					String agentId = "";
 					for (Agent e1 : agentdetails) {
 						agentName = e1.getName();
 						ShiftTimings = e1.getShiftTimings();
@@ -635,6 +665,7 @@ public class SchedulerTask {
 						hcmSupervisorName= e1.getHcmSupervisorName();
 						billable = e1.getBillable();
 						onshoreOffshore = e1.getOnshoreOffshore();
+						agentId=e1.getAgentId();
 						
 					}
 					logger.info("agentName " + agentName);
@@ -645,6 +676,7 @@ public class SchedulerTask {
 					logger.info("HCM_Supervisor Name" + hcmSupervisorName);
 					logger.info("Billable " + billable);
 					logger.info("onshoreOffshore" + onshoreOffshore);
+					logger.info("agentId" + agentId);
 
 					if (agentName.trim().equalsIgnoreCase("")) {
 						logger.info("Email Id is missing in Agent Master");
@@ -731,6 +763,7 @@ public class SchedulerTask {
 						dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
 						dataInsertionInDayMaster.setLocation(location);
 						dataInsertionInDayMaster.setName(agentName);
+						dataInsertionInDayMaster.setAgentId(agentId);
 
 						int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
 
@@ -743,11 +776,20 @@ public class SchedulerTask {
 							dataInsertInDayDetail.setToDate(LastTransactionToTime);
 							logger.info("From Time " + LoginTime);
 							logger.info("To Time " + LastTransactionToTime);
-							int insertInDayDetailStatus = agentDAO
-									.dataInsertionInDayDetailFromExceptionDetails(dataInsertInDayDetail);
 
-							if (insertInDayDetailStatus >= 0) {
+							List<Agent> chromeTempDetails = agentDAO
+									.fetchdataFromChromeExceptionDetails(dataInsertInDayDetail);
+							for (Agent chromeTempList : chromeTempDetails) {
+								
+								int insertInDayDetailStatus=agentDAO.dataInsertionInDayDetail(chromeTempList,LoginDateUpdated);
+								if (insertInDayDetailStatus >= 0) {
+									logger.info("Data is Successfully Inserted in Day Detail Table");
+									logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+								}
+							}
+				 
 								Agent datadeleteInChromeTemp = new Agent();
+								datadeleteInChromeTemp.setDATE(LoginDateUpdated);
 								datadeleteInChromeTemp.setEmailId(emailId);
 								datadeleteInChromeTemp.setFromDate(LoginTime);
 								datadeleteInChromeTemp.setToDate(LastTransactionToTime);
@@ -755,10 +797,7 @@ public class SchedulerTask {
 								if (deleteStatus >= 0) {
 									logger.info("Data is Successfully deleted in Chrome Exception Table");
 									logger.info("No Of Rows Deleted :" + deleteStatus);
-
 								}
-
-							}
 
 						}
 

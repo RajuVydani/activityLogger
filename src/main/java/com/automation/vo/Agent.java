@@ -450,4 +450,23 @@ public class Agent {
 	}
 
 	private String onshoreOffshore;
+	private int rownum;
+
+	public int getRownum() {
+		return rownum;
+	}
+
+	public void setRownum(int rownum) {
+		this.rownum = rownum;
+	}
+	
+	private String agentId;
+
+	public String getAgentId() {
+		return agentId;
+	}
+
+	public void setAgentId(String agentId) {
+		this.agentId = agentId;
+	}
 }

@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -37,11 +38,20 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class AdminController {
 
-	 	
-		String secretkey="ssssssssssssssssssssssssss";
+ 
+	
+	  @Value("${secret.key}")
+	    private String secretkey;
+ 
  
  
      
+	public String getSecretkey() {
+		return secretkey;
+	}
+	
+	 
+
 	@Autowired
 	private IAdminDAO adminDAO;
 
@@ -56,7 +66,7 @@ public class AdminController {
 	 */
 	@RequestMapping(value = "/admin", method = RequestMethod.GET)
 	public ModelAndView admin() throws Exception {
-		LOGGER.info("In admin()....");
+		LOGGER.info("In admin()....1"+ getSecretkey());
 
 	 
 		ModelAndView modelAndView = new ModelAndView("admin");

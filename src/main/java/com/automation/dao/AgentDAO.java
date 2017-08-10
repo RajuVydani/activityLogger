@@ -211,12 +211,12 @@ public class AgentDAO implements IAgentDAO {
 		 if (LOGGER.isInfoEnabled()) {
 		LOGGER.info("inside readAgentDetailsFromAgentMaster()");
 		LOGGER.info("query=="
-				+ "select AGENT_NAME,SHIFT_TIMINGS,LOCATION,HCM_SUPERVISOR_ID,HCM_SUPERVISOR_NAME,PROJECT_ID,BILLABLE,ON_OFF from AGENT_MASTER WHERE EMAIL_ID='"
+				+ "select AGENT_NAME,SHIFT_TIMINGS,LOCATION,HCM_SUPERVISOR_ID,HCM_SUPERVISOR_NAME,PROJECT_ID,BILLABLE,ON_OFF,AGENT_ID from AGENT_MASTER WHERE EMAIL_ID='"
 				+ emailId + "'");
 		 }
 	 
 		return jdbcTemplate.query(
-				"select IFNULL(AGENT_NAME,''),IFNULL(SHIFT_TIMINGS,''),IFNULL(LOCATION,''),IFNULL(HCM_SUPERVISOR_ID,''),IFNULL(HCM_SUPERVISOR_NAME,''),IFNULL(PROJECT_ID,''),IFNULL(BILLABLE,''),IFNULL(ON_OFF,'') from AGENT_MASTER WHERE EMAIL_ID='"
+				"select IFNULL(AGENT_NAME,''),IFNULL(SHIFT_TIMINGS,''),IFNULL(LOCATION,''),IFNULL(HCM_SUPERVISOR_ID,''),IFNULL(HCM_SUPERVISOR_NAME,''),IFNULL(PROJECT_ID,''),IFNULL(BILLABLE,''),IFNULL(ON_OFF,''),IFNULL(AGENT_ID,'') from AGENT_MASTER WHERE EMAIL_ID='"
 						+ emailId + "'",
 				new RowMapper<Agent>() {
 					/* (non-Javadoc)
@@ -232,6 +232,7 @@ public class AgentDAO implements IAgentDAO {
 						agent.setProjectId(rs.getString(6));
 						agent.setBillable(rs.getString(7));
 						agent.setOnshoreOffshore(rs.getString(8));
+						agent.setAgentId(rs.getString(9));
 
 						return agent;
 					}
@@ -247,10 +248,10 @@ public class AgentDAO implements IAgentDAO {
 	 */
 	public int dataInsertionInDayMaster(Agent e) {
 		LOGGER.info("inside dataInsertionInDayMaster()");
-		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PROD`,`IDLE`,`BREAK`,`MEALS`,`HUDDLE`,`WELLNESS_SUPPORT`,`COACHING`,`TEAM_MEETING`,`FB_TRAINING`,`NON_FB_TRAINING`,`LOCATION`,`HCM_SUPERVISOR_ID`,`HCM_SUPERVISOR_NAME`,`PROJECT_ID`,`BILLABLE`,`ON_OFF`) values('"
+		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`PROD`,`IDLE`,`BREAK`,`MEALS`,`HUDDLE`,`WELLNESS_SUPPORT`,`COACHING`,`TEAM_MEETING`,`FB_TRAINING`,`NON_FB_TRAINING`,`LOCATION`,`HCM_SUPERVISOR_ID`,`HCM_SUPERVISOR_NAME`,`PROJECT_ID`,`BILLABLE`,`ON_OFF`,`AGENT_ID`) values('"
 				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"
 				+ e.getLoginTime() + "','" + e.getLogoutTime() + "'," + e.getActivityHrs() + ",'" + e.getLocation()
-				+ "','" + e.getHcmSupervisorId() + "','" + e.getHcmSupervisorName() + "','" +e.getProjectId() + "','"+e.getBillable()+"','"+e.getOnshoreOffshore()+"')";
+				+ "','" + e.getHcmSupervisorId() + "','" + e.getHcmSupervisorName() + "','" +e.getProjectId() + "','"+e.getBillable()+"','"+e.getOnshoreOffshore()+"','"+e.getAgentId()+"')";
 		  if (LOGGER.isInfoEnabled()) {
 		LOGGER.info("query==" + query);
 		  }
@@ -366,11 +367,12 @@ public class AgentDAO implements IAgentDAO {
 	 * @see com.automation.idao.IAgentDAO#dataInsertionInDayDetailFromTempDetails(com.automation.vo.Agent)
 	 * This method will move Transactions from Chrome Temp Table to Day Detail Table
 	 */
-	public int dataInsertionInDayDetailFromTempDetails(Agent agent) {
+	public int dataInsertionInDayDetail(Agent agent ,String date) {
 	
-		String query = "INSERT INTO `DAY_DETAIL` (`EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE`) SELECT `EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE` FROM `CHROME_TEMP_DETAILS`"
-				+ " WHERE EMAIL_ID='" + agent.getEmailId() + "' AND FROM_TIME >='" + agent.getFromDate() + "' AND TO_TIME <='"
-				+ agent.getToDate() + "'";
+		String query = "INSERT INTO `DAY_DETAIL` (`DATE`,`SNO`,`EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE`) VALUES('"
+				+ date+"',"+(agent.getRownum()+1)+",'"+agent.getEmailId()+"','"+agent.getIdleFrom()+"','"+
+				agent.getIdleTo()+"','"+agent.getWebsitesVisited()+"','"+agent.getActivityCode()+"')";
+			 
 		  if (LOGGER.isInfoEnabled()) {
 				LOGGER.info("inside dataInsertionInException()");
 				LOGGER.info("query==" + query);
@@ -380,6 +382,69 @@ public class AgentDAO implements IAgentDAO {
 	}
 
 	 
+		/* (non-Javadoc)
+		 * @see com.automation.idao.IAgentDAO#dataInsertionInDayDetailFromTempDetails(com.automation.vo.Agent)
+		 * This method will move Transactions from Chrome Temp Table to Day Detail Table
+		 */
+		public List<Agent> fetchdataFromChromeTempDetails(Agent agent) {
+	 
+			String query = "SELECT `EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE` FROM `CHROME_TEMP_DETAILS`"
+					+ " WHERE EMAIL_ID='" + agent.getEmailId() + "' AND FROM_TIME >='" + agent.getFromDate() + "' AND TO_TIME <='"
+					+ agent.getToDate() + "' ORDER BY FROM_TIME";
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside fetchdataFromChromeTempDetails()");
+		 
+				LOGGER.info("query=="
+						+ query);
+				  }
+				return jdbcTemplate.query(
+						query,
+						new RowMapper<Agent>() {
+							public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
+								Agent agent = new Agent();
+
+								agent.setEmailId(resultset.getString(1));
+								agent.setIdleFrom(resultset.getString(2));
+								agent.setIdleTo(resultset.getString(3));
+								agent.setWebsitesVisited(resultset.getString(4));
+								agent.setActivityCode(resultset.getString(5));
+								agent.setRownum(rownumber);
+
+								return agent;
+							}
+						});
+		}
+
+		
+		public List<Agent> fetchdataFromChromeExceptionDetails(Agent agent) {
+			 
+			String query = "SELECT `EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE` FROM `CHROME_EXCEPTION_DETAILS`"
+					+ " WHERE EMAIL_ID='" + agent.getEmailId() + "' AND FROM_TIME >='" + agent.getFromDate() + "' AND TO_TIME <='"
+					+ agent.getToDate() + "' ORDER BY FROM_TIME";
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside fetchdataFromChromeExceptionDetails()");
+		 
+				LOGGER.info("query=="
+						+ query);
+				  }
+				return jdbcTemplate.query(
+						query,
+						new RowMapper<Agent>() {
+							public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
+								Agent agent = new Agent();
+
+								agent.setEmailId(resultset.getString(1));
+								agent.setIdleFrom(resultset.getString(2));
+								agent.setIdleTo(resultset.getString(3));
+								agent.setWebsitesVisited(resultset.getString(4));
+								agent.setActivityCode(resultset.getString(5));
+								agent.setRownum(rownumber);
+
+								return agent;
+							}
+						});
+		}
+
 	 
 	/* (non-Javadoc)
 	 * @see com.automation.idao.IAgentDAO#dataInsertionInDayDetailFromExceptionDetails(com.automation.vo.Agent)

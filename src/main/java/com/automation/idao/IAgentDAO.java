@@ -67,7 +67,8 @@ public interface IAgentDAO {
 	 * @param e
 	 * @return
 	 */
-	int dataInsertionInDayDetailFromTempDetails(Agent e);
+	public int dataInsertionInDayDetail(Agent agent ,String date) ;
+	public List<Agent> fetchdataFromChromeExceptionDetails(Agent agent) ;
 
 	/**
 	 * @param e
@@ -163,5 +164,7 @@ public interface IAgentDAO {
 	 * @return
 	 */
 	List<Agent> readChromeExceptionAgentIds();
+	
+	public List<Agent> fetchdataFromChromeTempDetails(Agent agent);
 
 }
