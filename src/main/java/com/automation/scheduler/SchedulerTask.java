@@ -753,9 +753,9 @@ public class SchedulerTask {
 							logger.info("Data is Successfully Inserted in Day Detail Table");
 							logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
 
-							int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
+							int deleteStatus = agentDAO.deleteFromChromeException(t);
 							if (deleteStatus >= 0) {
-								logger.info("Data is Successfully deleted in Chrome Detail Table");
+								logger.info("Data is Successfully deleted in Chrome Exception Table");
 								logger.info("No Of Rows Deleted :" + deleteStatus);
 
 							}
@@ -779,9 +779,9 @@ public class SchedulerTask {
 								logger.info("Data is Successfully Updated in Day Detail Table");
 								logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-								int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
+								int deleteStatus = agentDAO.deleteFromChromeException(t);
 								if (deleteStatus >= 0) {
-									logger.info("Data is Successfully deleted in Chrome Detail Table");
+									logger.info("Data is Successfully deleted in Chrome Exception Table");
 									logger.info("No Of Rows Deleted :" + deleteStatus);
 
 								}
@@ -928,9 +928,9 @@ public class SchedulerTask {
 									logger.info("Data is Successfully Inserted in Day Detail Table");
 									logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
 
-									int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
+									int deleteStatus = agentDAO.deleteFromChromeException(t);
 									if (deleteStatus >= 0) {
-										logger.info("Data is Successfully deleted in Chrome Detail Table");
+										logger.info("Data is Successfully deleted in Chrome Exception Table");
 										logger.info("No Of Rows Deleted :" + deleteStatus);
 
 									}
@@ -954,9 +954,9 @@ public class SchedulerTask {
 										logger.info("Data is Successfully Updated in Day Detail Table");
 										logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-										int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
+										int deleteStatus = agentDAO.deleteFromChromeException(t);
 										if (deleteStatus >= 0) {
-											logger.info("Data is Successfully deleted in Chrome Detail Table");
+											logger.info("Data is Successfully deleted in Chrome Exception Table");
 											logger.info("No Of Rows Deleted :" + deleteStatus);
 
 										}
@@ -1221,9 +1221,9 @@ public class SchedulerTask {
 										logger.info("Data is Successfully Inserted in Day Detail Table");
 										logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
 
-										int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
+										int deleteStatus = agentDAO.deleteFromChromeException(t);
 										if (deleteStatus >= 0) {
-											logger.info("Data is Successfully deleted in Chrome Detail Table");
+											logger.info("Data is Successfully deleted in Chrome Exception Table");
 											logger.info("No Of Rows Deleted :" + deleteStatus);
 
 										}
@@ -1254,9 +1254,9 @@ public class SchedulerTask {
 											logger.info("Data is Successfully Updated in Day Detail Table");
 											logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-											int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
+											int deleteStatus = agentDAO.deleteFromChromeException(t);
 											if (deleteStatus >= 0) {
-												logger.info("Data is Successfully deleted in Chrome Detail Table");
+												logger.info("Data is Successfully deleted in Chrome Exception Table");
 												logger.info("No Of Rows Deleted :" + deleteStatus);
 
 											}
