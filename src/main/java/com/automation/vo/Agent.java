@@ -16,11 +16,7 @@ public class Agent {
 	/**
 	 * 
 	 */
-	private String idleFrom;
-	/**
-	 * 
-	 */
-	private String idleTo;
+
 	/**
 	 * 
 	 */
@@ -120,7 +116,7 @@ public class Agent {
 	/**
 	 * 
 	 */
-	private String shiftTimings;
+
 	/**
 	 * 
 	 */
@@ -148,7 +144,16 @@ public class Agent {
 	/**
 	 * 
 	 */
-	private String idleTimings;
+	private String activityTimings;
+
+	public String getActivityTimings() {
+		return activityTimings;
+	}
+
+	public void setActivityTimings(String activityTimings) {
+		this.activityTimings = activityTimings;
+	}
+
 	/**
 	 * 
 	 */
@@ -178,8 +183,6 @@ public class Agent {
 	public String hcmSupervisorId;
 	public String hcmSupervisorName;
 
- 
-
 	public String getHcmSupervisorId() {
 		return hcmSupervisorId;
 	}
@@ -208,20 +211,6 @@ public class Agent {
 	 */
 	public void setIdleInterval(int idleInterval) {
 		this.idleInterval = idleInterval;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getIdleTimings() {
-		return idleTimings;
-	}
-
-	/**
-	 * @param idleTimings
-	 */
-	public void setIdleTimings(String idleTimings) {
-		this.idleTimings = idleTimings;
 	}
 
 	/**
@@ -285,7 +274,9 @@ public class Agent {
 		DATE = dATE;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -324,34 +315,6 @@ public class Agent {
 	/**
 	 * @return
 	 */
-	public String getIdleFrom() {
-		return idleFrom;
-	}
-
-	/**
-	 * @param idleFrom
-	 */
-	public void setIdleFrom(String idleFrom) {
-		this.idleFrom = idleFrom;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getIdleTo() {
-		return idleTo;
-	}
-
-	/**
-	 * @param idleTo
-	 */
-	public void setIdleTo(String idleTo) {
-		this.idleTo = idleTo;
-	}
-
-	/**
-	 * @return
-	 */
 	public String getWebsitesVisited() {
 		return websitesVisited;
 	}
@@ -366,16 +329,6 @@ public class Agent {
 	/**
 	 * @return
 	 */
-	public String getShiftTimings() {
-		return shiftTimings;
-	}
-
-	/**
-	 * @param shiftTimings
-	 */
-	public void setShiftTimings(String shiftTimings) {
-		this.shiftTimings = shiftTimings;
-	}
 
 	/**
 	 * @return
@@ -432,7 +385,9 @@ public class Agent {
 	public void setIdleHours(String idleHours) {
 		this.idleHours = idleHours;
 	}
+
 	private String billable;
+
 	public String getBillable() {
 		return billable;
 	}
@@ -459,7 +414,7 @@ public class Agent {
 	public void setRownum(int rownum) {
 		this.rownum = rownum;
 	}
-	
+
 	private String agentId;
 
 	public String getAgentId() {
@@ -469,4 +424,86 @@ public class Agent {
 	public void setAgentId(String agentId) {
 		this.agentId = agentId;
 	}
+
+	private String startTime;
+
+	public String getStartTimeRange() {
+		return startTime;
+	}
+
+	private String EndTime;
+
+	public String getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+
+	public String getEndTime() {
+		return EndTime;
+	}
+
+	public void setEndTime(String endTime) {
+		EndTime = endTime;
+	}
+
+	private String subProjectId;
+	private String subProjectName;
+	private String ProjectName;
+
+	public String getSubProjectName() {
+		return subProjectName;
+	}
+
+	public void setSubProjectName(String subProjectName) {
+		this.subProjectName = subProjectName;
+	}
+
+	public String getProjectName() {
+		return ProjectName;
+	}
+
+	public void setProjectName(String projectName) {
+		ProjectName = projectName;
+	}
+
+	public String getSubProjectId() {
+		return subProjectId;
+	}
+
+	public void setSubProjectId(String subProjectId) {
+		this.subProjectId = subProjectId;
+	}
+
+	private String shiftFrom;
+
+	public String getShiftFrom() {
+		return shiftFrom;
+	}
+
+	public void setShiftFrom(String shiftFrom) {
+		this.shiftFrom = shiftFrom;
+	}
+
+	public String getShiftTo() {
+		return shiftTo;
+	}
+
+	public void setShiftTo(String shiftTo) {
+		this.shiftTo = shiftTo;
+	}
+
+	private String shiftTo;
+	private String ShiftTimings;
+
+	public String getShiftTimings() {
+		return ShiftTimings;
+	}
+
+	public void setShiftTimings(String shiftTimings) {
+		ShiftTimings = shiftTimings;
+	}
+
 }

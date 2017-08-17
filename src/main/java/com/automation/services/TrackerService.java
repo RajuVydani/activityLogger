@@ -94,16 +94,15 @@ public class TrackerService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response storeData(Agent jsonagent) {
 		System.out.println(AppConstants.METHOD + "-getAgentData()*************");
-		System.out.println(jsonagent.getName());
-		String jsonagentName = jsonagent.getName();
+ 
 		String serviceStatus = "failure";
 		Agent responseagent = new Agent();
 		try {
 
 			String serviceName = jsonagent.getServicename();
-			String agentName = jsonagent.getName();
+ 
 			String agentEmailId = jsonagent.getEmailId();
-			String Timings = jsonagent.getIdleTimings();
+			String Timings = jsonagent.getActivityTimings();
 
 			logger.info("Service Name :" + serviceName);
 			logger.info("Email Id=== :" + agentEmailId);
@@ -112,9 +111,7 @@ public class TrackerService {
 					|| "".trim().equalsIgnoreCase(serviceName)) {
 				throw new ValidationException("Validation Exception :: Service name is empty");
 			}
-			if (null == agentName || "undefined".equalsIgnoreCase(agentName) || "".trim().equalsIgnoreCase(agentName)) {
-				throw new ValidationException("Validation Exception :: Agent name is empty");
-			}
+		 
 			if (null == agentEmailId || "undefined".equalsIgnoreCase(agentEmailId)
 					|| "".trim().equalsIgnoreCase(agentEmailId)) {
 				throw new ValidationException("Validation Exception :: Agent Email is empty");
@@ -135,7 +132,7 @@ public class TrackerService {
 				// remove white space from email id
 				agentEmailId = agentEmailId.replaceAll("\\s+", "");
 				agent.setEmailId(agentEmailId);
-				agent.setName(agentName);
+ 
 
 				if (!Timings.trim().equalsIgnoreCase("")) {
 
@@ -167,9 +164,9 @@ public class TrackerService {
 
 						Agent updateagent = new Agent();
 						updateagent.setEmailId(agentEmailId);
-						updateagent.setName(agentName);
-						updateagent.setIdleFrom(fromTime);
-						updateagent.setIdleTo(toTime);
+ 
+						updateagent.setFromDate(fromTime);
+						updateagent.setToDate(toTime);
 						updateagent.setWebsitesVisited(webistedvisited_updated);
 						updateagent.setActivityCode(activityCode);
 						int insertStatus=agentDAO.dataInsertionInChromeDetails(updateagent);

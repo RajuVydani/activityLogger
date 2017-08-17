@@ -34,6 +34,9 @@
 	<bean id="policyDAO" class="com.automation.dao.PolicyDAO">
 		<property name="jdbcTemplate" ref="jdbcTemplate" />
 	</bean>
+		<bean id="adminDAO" class="com.automation.dao.AdminDAO">
+		<property name="jdbcTemplate" ref="jdbcTemplate" />
+	</bean>
 	
 	<bean id="trackerService" class="com.automation.services.TrackerService">
 		<property name="agentDAO" ref="agentDAO" />
@@ -67,7 +70,7 @@
 	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
 
 		<property name="jobDetail" ref="schedulerJob" />
-		<property name="cronExpression"  value="0 8 20 * * ?" />
+		<property name="cronExpression"  value="0 0/1 * * * ?" />
 
 	</bean>
 

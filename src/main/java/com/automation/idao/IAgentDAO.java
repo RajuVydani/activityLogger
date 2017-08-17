@@ -32,30 +32,19 @@ public interface IAgentDAO {
 	 * @param emailid
 	 * @return
 	 */
-	List<Agent> readChromeTempAgentTransactions(String emailid);
+	List<Agent> readChromeTempAgentTransactions();
 
 	/**
 	 * @return
 	 */
-	List<Agent> readChromeTempAgentIds();
-
-	/**
-	 * @param emailId
-	 * @return
-	 */
+ 
 	List<Agent> readAgentDetailsFromAgentMaster(String emailId);
 
 	/**
 	 * @param e
 	 * @return
 	 */
-	List<Agent> calculateTempActiviyHrs(Agent e);
-
-	/**
-	 * @param e
-	 * @return
-	 */
-	List<Agent> calculateExceptionActiviyHrs(Agent e);
+	List<Agent> calculateActiviyHrs(Agent e);
 
 	/**
 	 * @param e
@@ -67,19 +56,13 @@ public interface IAgentDAO {
 	 * @param e
 	 * @return
 	 */
-	public int dataInsertionInDayDetail(Agent agent ,String date) ;
-	public List<Agent> fetchdataFromChromeExceptionDetails(Agent agent) ;
+	public int dataInsertionInDayDetail(Agent agent);
 
 	/**
-	 * @param e
+	 * @param agent
 	 * @return
 	 */
-	int dataInsertionInDayDetailFromExceptionDetails(Agent e);
-
-	/**
-	 * @param e
-	 * @return
-	 */
+ 
 	int dataInsertionInException(Agent e);
 
 	/**
@@ -163,8 +146,55 @@ public interface IAgentDAO {
 	/**
 	 * @return
 	 */
+	/**
+	 * @return
+	 */
 	List<Agent> readChromeExceptionAgentIds();
-	
+
+	/**
+	 * @param agent
+	 * @return
+	 */
 	public List<Agent> fetchdataFromChromeTempDetails(Agent agent);
 
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public List<Agent> fetchShiftDetails(Agent agent);
+
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public int checkEntryExsistInDayMaster(Agent agent);
+
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public List<Agent> getPreviousDayDetailsFromDayMaster(Agent agent);
+
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public int getDayDetailCount(Agent agent);
+
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public List<Agent> geLoginTimeFromDayMaster(Agent agent);
+
+	/**
+	 * @param e
+	 * @return
+	 */
+	public int dataUpdationInDayMaster(Agent e);
+	
+	public int checkDayDetailLastActivity(Agent agent);
+	
+	public int dataUpdationInDayDetails(Agent agent);
+	
 }
