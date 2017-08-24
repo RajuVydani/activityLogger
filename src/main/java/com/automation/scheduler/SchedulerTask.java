@@ -425,15 +425,15 @@ public class SchedulerTask {
 						logger.info("subProjectId" + subProjectId);
 						
 						int shiftHour = Integer.parseInt(activityFromtimeSplt[0]);
-                        String shiftTime="";
+                 String shiftTime="";
 						if (shiftHour >= 0 && shiftHour <= 3) {
 							
-							shiftTime="23:59:00";
+							shiftTime=activityFromDatesplit[1];
 						}
 						else
 						{
 							shiftTime=activityFromDatesplit[1];
-						}
+						} 
 						
 						Agent shiftTimingsInput = new Agent();
 						shiftTimingsInput.setProjectId(projectId);
@@ -457,18 +457,12 @@ public class SchedulerTask {
 
 						}
 						if (shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase("")) {
-							if (errorDesc.trim().equalsIgnoreCase("")) {
-								errorDesc = "shift timings master";
-							} else {
-
-								errorDesc = errorDesc + " and shift timings master";
-							}
+							logger.info("Not present in any shift");
 
 						}
 						t.setErrorDesc(errorDesc);
 
-						if (agentName.trim().equalsIgnoreCase("") || shiftFrom.trim().equalsIgnoreCase("")
-								|| shiftTo.trim().equalsIgnoreCase("")) {
+						if (agentName.trim().equalsIgnoreCase("") ) {
 
 							int insertStatus = agentDAO.dataInsertionInException(t);
 							if (insertStatus >= 0) {
@@ -498,8 +492,14 @@ public class SchedulerTask {
 							dataInsertionInDayMaster.setEmailId(emailId);
 							dataInsertionInDayMaster.setLoginTime(t.getFromDate());
 							dataInsertionInDayMaster.setLogoutTime(t.getToDate());
-
+if(shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase(""))
+{
+	dataInsertionInDayMaster.setShiftTimings("N");
+}
+else
+{
 							dataInsertionInDayMaster.setShiftTimings(shiftFrom + "-" + shiftTo);
+}
 							dataInsertionInDayMaster.setProjectId(projectId);
 							dataInsertionInDayMaster.setProjectName(projectName);
 							dataInsertionInDayMaster.setSubProjectId(subProjectId);
@@ -1103,7 +1103,7 @@ public class SchedulerTask {
 	                        String shiftTime="";
 							if (shiftHour >= 0 && shiftHour <= 3) {
 								
-								shiftTime="23:59:00";
+								shiftTime=activityFromDatesplit[1];
 							}
 							else
 							{
@@ -1131,18 +1131,12 @@ public class SchedulerTask {
 
 							}
 							if (shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase("")) {
-								if (errorDesc.trim().equalsIgnoreCase("")) {
-									errorDesc = "shift timings master";
-								} else {
-
-									errorDesc = errorDesc + " and shift timings master";
-								}
+								logger.info("Not Present in any shift");
 
 							}
 							t.setErrorDesc("please check " + errorDesc);
 
-							if (agentName.trim().equalsIgnoreCase("") || shiftFrom.trim().equalsIgnoreCase("")
-									|| shiftTo.trim().equalsIgnoreCase("")) {
+							if (agentName.trim().equalsIgnoreCase("")) {
 
 								logger.info("errorDesc===" + errorDesc);
 
@@ -1162,7 +1156,14 @@ public class SchedulerTask {
 								dataInsertionInDayMaster.setLoginTime(t.getFromDate());
 								dataInsertionInDayMaster.setLogoutTime(t.getToDate());
 
-								dataInsertionInDayMaster.setShiftTimings(shiftFrom + "-" + shiftTo);
+								if(shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase(""))
+								{
+									dataInsertionInDayMaster.setShiftTimings("N");
+								}
+								else
+								{
+															dataInsertionInDayMaster.setShiftTimings(shiftFrom + "-" + shiftTo);
+								}
 								dataInsertionInDayMaster.setProjectId(projectId);
 								dataInsertionInDayMaster.setProjectName(projectName);
 								dataInsertionInDayMaster.setSubProjectId(subProjectId);

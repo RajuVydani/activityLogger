@@ -35,5 +35,12 @@ public interface IAdminDAO {
 	public int checkProgramExsist(Admin admin);
 	public int checkProjectExsist(Admin admin);
 	
+	public List<Admin> getActHrsTLLevel(Admin admin);
+	public int getAgentsTLLevel(Admin admin); 
+	public List<Admin> fechAgentsUnderSupervisor(Admin admin) ;
+	public List<Admin> fetchProjectId(Admin admin);
+	public List<Admin> getActHrsProjectLevel(Admin admin);
+	public int getAgentsProjectLevel(Admin admin) ;
+	
 
 }

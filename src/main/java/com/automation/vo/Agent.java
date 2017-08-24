@@ -414,7 +414,24 @@ public class Agent {
 	public void setRownum(int rownum) {
 		this.rownum = rownum;
 	}
+	private String month;
+	public String getMonth() {
+		return month;
+	}
 
+	public void setMonth(String month) {
+		this.month = month;
+	}
+
+	public String getYear() {
+		return year;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
+	private String year;
 	private String agentId;
 
 	public String getAgentId() {
@@ -506,4 +523,114 @@ public class Agent {
 		ShiftTimings = shiftTimings;
 	}
 
+	private String prodSum;
+	public String getProdSum() {
+		return prodSum;
+	}
+
+	public void setProdSum(String prodSum) {
+		this.prodSum = prodSum;
+	}
+
+	public String getIdleSum() {
+		return idleSum;
+	}
+
+	public void setIdleSum(String idleSum) {
+		this.idleSum = idleSum;
+	}
+
+	public String getProdAvg() {
+		return prodAvg;
+	}
+
+	public void setProdAvg(String prodAvg) {
+		this.prodAvg = prodAvg;
+	}
+
+	public String getIdleAvg() {
+		return idleAvg;
+	}
+
+	public void setIdleAvg(String idleAvg) {
+		this.idleAvg = idleAvg;
+	}
+
+	private String idleSum;
+	private String prodAvg;
+	private String idleAvg;
+	
+	private String breakSum;
+	private String mealsSum;
+	private String welnessSupportSum;
+	public String getBreakSum() {
+		return breakSum;
+	}
+
+	public void setBreakSum(String breakSum) {
+		this.breakSum = breakSum;
+	}
+
+	public String getMealsSum() {
+		return mealsSum;
+	}
+
+	public void setMealsSum(String mealsSum) {
+		this.mealsSum = mealsSum;
+	}
+
+	public String getWelnessSupportSum() {
+		return welnessSupportSum;
+	}
+
+	public void setWelnessSupportSum(String welnessSupportSum) {
+		this.welnessSupportSum = welnessSupportSum;
+	}
+
+	public String getCoachingSum() {
+		return coachingSum;
+	}
+
+	public void setCoachingSum(String coachingSum) {
+		this.coachingSum = coachingSum;
+	}
+
+	public String getTeamMeetingSum() {
+		return teamMeetingSum;
+	}
+
+	public void setTeamMeetingSum(String teamMeetingSum) {
+		this.teamMeetingSum = teamMeetingSum;
+	}
+
+	public String getFbTrainingSum() {
+		return fbTrainingSum;
+	}
+
+	public void setFbTrainingSum(String fbTrainingSum) {
+		this.fbTrainingSum = fbTrainingSum;
+	}
+
+	public String getNonFbTrainingSum() {
+		return nonFbTrainingSum;
+	}
+
+	public void setNonFbTrainingSum(String nonFbTrainingSum) {
+		this.nonFbTrainingSum = nonFbTrainingSum;
+	}
+	private String huddleSum;
+	public String getHuddleSum() {
+		return huddleSum;
+	}
+
+	public void setHuddleSum(String huddleSum) {
+		this.huddleSum = huddleSum;
+	}
+
+	private String coachingSum;
+	private String teamMeetingSum;
+	private String fbTrainingSum;
+	private String nonFbTrainingSum;
+ 
+	
 }

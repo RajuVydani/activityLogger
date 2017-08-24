@@ -22,7 +22,7 @@ public interface IAgentDAO {
 	/**
 	 * @return
 	 */
-	int idleInterval();
+	public List<Agent> idleInterval(Agent agent);
 
 	/**
 	 * @param emailid
@@ -191,10 +191,45 @@ public interface IAgentDAO {
 	 * @param e
 	 * @return
 	 */
+	/**
+	 * @param e
+	 * @return
+	 */
 	public int dataUpdationInDayMaster(Agent e);
 	
+	/**
+	 * @param agent
+	 * @return
+	 */
 	public int checkDayDetailLastActivity(Agent agent);
 	
+	/**
+	 * @param agent
+	 * @return
+	 */
 	public int dataUpdationInDayDetails(Agent agent);
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public int checkEntryExsistInMonthMaster(Agent agent);
+	
+	/**
+	 * @return
+	 */
+	public List<Agent> readAgentDetailsFromDayMaster(Agent agent) ;
+	
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public int dataInsertionInMonthMaster(Agent agent);
+	 /**
+	 * @param agent
+	 * @return
+	 */
+	public int dataUpdationInMonthMaster(Agent agent);
+	
+	public List<Agent> fetchProjectDetails(Agent agent);
 	
 }

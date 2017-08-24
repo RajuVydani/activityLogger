@@ -9,14 +9,22 @@
 	<context:component-scan base-package="com.automation" />
 	
 	<!-- MySQL Database Connection -->
-	<bean id="dataSource"
+	
+<!-- 	<bean id="dataSource"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
 		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
 		<property name="url" value="jdbc:mysql://127.0.0.1:3306/TIME_TRACKER" />
 		<property name="username" value="root" />
 		<property name="password" value="root" />
-	</bean>
-	
+	</bean> -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean> 
+<context:property-placeholder location="${envfile}"/> 
 	<!-- Derby Database Connection [For Dev Testing] -->
 	<!-- <bean id="dataSource1"
 		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
@@ -59,7 +67,23 @@
 		</property>
 
 	</bean>
+		<!-- Month Scheduler-->
+	<bean id="monthSchedulerTask" class="com.automation.scheduler.MonthSchedulerTask" />
 
+	<!-- Spring Quartz -->
+	<bean name="monthSchedulerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+
+		<property name="jobClass" value="com.automation.scheduler.MonthSchedulerJob" />
+
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="monthSchedulerTask" value-ref="monthSchedulerTask" />
+			</map>
+		</property>
+
+	</bean>
+	
+	
 	<!-- <bean id="schedulerJob" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
 		<property name="targetObject" ref="SchedulerTask" /> <property name="targetMethod" 
 		value="printMe" /> </bean> -->
@@ -73,18 +97,34 @@
 		<property name="cronExpression"  value="0 0/5 * * * ?" />
 
 	</bean>
+	
+		<bean id="monthCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+
+		<property name="jobDetail" ref="monthSchedulerJob" />
+		<property name="cronExpression"  value="0 0 0/5 * * ?" />
+
+	</bean>
 
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="jobDetails">
 			<list>
 				<ref bean="schedulerJob" />
+				 <ref bean="monthSchedulerJob" />
 			</list>
 		</property>
 
 		<property name="triggers">
 			<list>
 				<ref bean="cronTrigger" />
+				 <ref bean="monthCronTrigger" />
 			</list>
 		</property>
 	</bean>	
+	
+
+
+	 
+	
+	
+	
 </beans>

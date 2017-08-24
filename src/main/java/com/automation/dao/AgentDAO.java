@@ -416,10 +416,14 @@ public class AgentDAO implements IAgentDAO {
 	 * @see com.automation.idao.IAgentDAO#fetchShiftDetails(com.automation.vo.Agent)
 	 */
 	public List<Agent> fetchShiftDetails(Agent agent) {
-
-		String query = "SELECT SHIFT_FROM,SHIFT_TO " + "FROM SHIFT_TIMINGS "
-				+ " WHERE  CAST(SUBTIME(SHIFT_FROM, '01:00:00') AS TIME) <= '" + agent.getStartTime() + "' AND "
-				+ "CAST(ADDTIME(SHIFT_FROM, '04:59:00') AS TIME) >= '" + agent.getStartTime() + "'";
+String location=agent.getLocation();
+String query="";
+		 
+		  query = "SELECT SHIFT_FROM,SHIFT_TO " + "FROM SHIFT_TIMINGS "
+				+ " WHERE  CAST(SUBTIME(SHIFT_FROM, '00:30:00') AS TIME) <= '" + agent.getStartTime() + "' AND "
+				+ "CAST(ADDTIME(SHIFT_FROM, '00:30:00') AS TIME) >= '" + agent.getStartTime() + "' AND LOCATION_ID='"+
+				location+"' AND PROJECT_ID="+agent.getProjectId()+" AND SUB_PROJECT_ID="+agent.getSubProjectId();
+ 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("inside fetchShiftDetails()");
 
@@ -436,6 +440,33 @@ public class AgentDAO implements IAgentDAO {
 			}
 		});
 	}
+	
+	
+	
+	public List<Agent> fetchProjectDetails(Agent agent) {
+
+		String query = "SELECT PROJECT_ID,SUB_PROJECT_ID,LOCATION_ID " + "FROM AGENT_MASTER "
+				+ " WHERE  EMAIL_ID='"+agent.getEmailId()+"'";
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside fetchShiftDetails()");
+
+			LOGGER.info("query==" + query);
+		}
+		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
+				Agent agent = new Agent();
+
+				agent.setProjectId(resultset.getString(1));
+				agent.setSubProjectId(resultset.getString(2));
+				agent.setLocation(resultset.getString(3));
+
+				return agent;
+			}
+		});
+	}
+	
+	
+	
 
 	/**
 	 * @param agent
@@ -546,16 +577,33 @@ public class AgentDAO implements IAgentDAO {
 	 * @see com.automation.idao.IAgentDAO#idleInterval() This method will fetch
 	 * Idle Interval
 	 */
-	public int idleInterval() {
-		String query = "select IFNULL(INTERVAL_SECS,90)  from CHROME_IDLE_INTERVAL";
-
+ 
+	public List<Agent> idleInterval(Agent agent) { 
+		String query = "select IFNULL(INTERVAL_SECS,90)  from CHROME_IDLE_INTERVAL WHERE PROJECT_ID="+agent.getProjectId()+
+				" AND SUB_PROJECT_ID="+agent.getSubProjectId()+" AND LOCATION_ID='"+agent.getLocation()+"'";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside idleInterval()");
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.queryForInt(query);
-	}
 
+			LOGGER.info("inside idleInterval");
+			LOGGER.info("query======" + query);
+		}
+		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
+			 * ResultSet, int)
+			 */
+			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
+				Agent agent = new Agent();
+
+				agent.setIdleInterval(resultset.getInt(1));
+
+				return agent;
+			}
+		});
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see com.automation.idao.IAgentDAO#getDayDetailCount(com.automation.vo.Agent)
 	 */
@@ -940,4 +988,118 @@ public class AgentDAO implements IAgentDAO {
 				});
 
 	}
+	public int checkEntryExsistInMonthMaster(Agent agent) {
+
+		String query = 	"select COUNT(*) from MONTH_MASTER WHERE AGENT_ID="+agent.getAgentId()+" AND MONTH="+agent.getMonth()
+		+" AND YEAR ="+agent.getYear();
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside checkEntryExsistInMonthMaster()");
+			LOGGER.info("query==" + query);
+		}
+		return jdbcTemplate.queryForInt(query);
+	}
+	public List<Agent> readAgentDetailsFromDayMaster(Agent agent) {
+		LOGGER.info("inside readAgentDetailsFromDayMaster()");
+
+		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
+		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
+		String query ="select EMAIL_ID,AGENT_ID,AGENT_NAME,SHIFT_DETAILS,PROJECT_ID,PROJECT_NAME," + 
+				"SUB_PROJECT_ID,SUB_PROJECT_NAME,LOCATION_ID,BILLABLE,ON_OFF,HCM_SUPERVISOR_ID,HCM_SUPERVISOR_NAME,SUM(PROD),SUM(IDLE),AVG(PROD),AVG(IDLE),SUM(BREAK),SUM(MEALS),SUM(HUDDLE),SUM(WELLNESS_SUPPORT),SUM(COACHING),SUM(TEAM_MEETING),SUM(FB_TRAINING),SUM(NON_FB_TRAINING),MONTH(DATE),YEAR(DATE)" + 
+				" from DAY_MASTER  WHERE  MONTH(DATE)="+agent.getMonth() + 
+				"  AND YEAR(DATE) ="+agent.getYear()+" GROUP BY AGENT_ID, MONTH(DATE),YEAR(DATE)";
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("query==" + query);
+		}
+		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
+				Agent e = new Agent();
+				e.setEmailId(resultset.getString(1));
+				e.setAgentId(resultset.getString(2));
+				e.setName(resultset.getString(3));
+				e.setShiftTimings(resultset.getString(4));
+				e.setProjectId(resultset.getString(5));
+				e.setProjectName(resultset.getString(6));
+				e.setSubProjectId(resultset.getString(7));
+				e.setSubProjectName(resultset.getString(8));
+				e.setLocation(resultset.getString(9));
+				e.setBillable(resultset.getString(10));
+				e.setOnshoreOffshore(resultset.getString(11));
+				e.setHcmSupervisorId(resultset.getString(12));
+				e.setHcmSupervisorName(resultset.getString(13));
+				e.setProdSum(resultset.getString(14));
+				e.setIdleSum(resultset.getString(15));
+				e.setProdAvg(resultset.getString(16));
+				e.setIdleAvg(resultset.getString(17));
+				e.setBreakSum(resultset.getString(18));
+				e.setMealsSum(resultset.getString(19));
+				e.setHuddleSum(resultset.getString(20));
+				e.setWelnessSupportSum(resultset.getString(21));
+				e.setCoachingSum(resultset.getString(22));
+				e.setTeamMeetingSum(resultset.getString(23));
+				e.setFbTrainingSum(resultset.getString(24));
+				e.setNonFbTrainingSum(resultset.getString(25));
+				e.setMonth(resultset.getString(26));
+				e.setYear(resultset.getString(27));
+
+				return e;
+			}
+		});
+	}
+
+	
+	public int dataInsertionInMonthMaster(Agent agent) {
+
+	
+		
+		String query = "INSERT INTO `MONTH_MASTER` (`MONTH`, `YEAR`, `EMAIL_ID`, `AGENT_ID`,`AGENT_NAME`, `SHIFT_DETAILS`,`PROJECT_ID`," + 
+				"`PROJECT_NAME`,`SUB_PROJECT_ID`, `SUB_PROJECT_NAME`,`LOCATION_ID`, `BILLABLE`,  `ON_OFF`," + 
+				"`HCM_SUPERVISOR_ID`,`HCM_SUPERVISOR_NAME`,`PROD_SUM`,`IDLE_SUM`,`PROD_AVG`,`IDLE_AVG`,`BREAK`,`MEALS`,`HUDDLE`,`WELLNESS_SUPPORT`,`COACHING`,`TEAM_MEETING`,`FB_TRAINING`,`NON_FB_TRAINING`  ) VALUES("
+				+ agent.getMonth() + "," +agent.getYear()+ ",'" + agent.getEmailId() + "'," + agent.getAgentId()
+				+ ",'" + agent.getName() + "','" + agent.getShiftTimings()+ "'," + agent.getProjectId() + ",'"
+			 + agent.getProjectName() + "'," + agent.getSubProjectId() + ",'"
+		 + agent.getSubProjectName() + "','" + agent.getLocation()+ "','" + agent.getBillable() + "','"
+		+ agent.getOnshoreOffshore()+ "'," + agent.getHcmSupervisorId()+ ",'" + agent.getHcmSupervisorName() + "',"+
+			agent.getProdSum()+","+ agent.getIdleSum()+","+agent.getProdAvg()+","+agent.getIdleAvg()+","+
+			agent.getBreakSum()+","+agent.getMealsSum()+","+agent.getHuddleSum()+","+agent.getWelnessSupportSum()+","+agent.getCoachingSum()+","+agent.getTeamMeetingSum()+","+agent.getFbTrainingSum()
+			+","+agent.getNonFbTrainingSum()+")"; 
+				
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside dataInsertionInMonthMaster()");
+			LOGGER.info("query==" + query);
+		}
+
+		return jdbcTemplate.update(query);
+	}
+	
+	public int dataUpdationInMonthMaster(Agent agent) {
+
+		
+		 
+		String query = "UPDATE `MONTH_MASTER` SET PROD_SUM="+agent.getProdSum()+
+				",IDLE_SUM="+agent.getIdleSum()+",PROD_AVG="+agent.getProdAvg()+
+				",IDLE_AVG="+agent.getIdleAvg()+
+				",BREAK="+agent.getBreakSum()+
+				",MEALS="+agent.getMealsSum()+
+				",HUDDLE="+agent.getHuddleSum()+
+				",WELLNESS_SUPPORT="+agent.getWelnessSupportSum()+
+				",COACHING="+agent.getCoachingSum()+
+				",TEAM_MEETING="+agent.getTeamMeetingSum()+
+				",FB_TRAINING="+agent.getFbTrainingSum()+
+				",NON_FB_TRAINING="+agent.getNonFbTrainingSum()+
+				" WHERE AGENT_ID=" + agent.getAgentId()+
+				" AND MONTH="+agent.getMonth()+
+				" AND YEAR="+agent.getYear();
+			 
+ 
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside dataUpdateionInMonthMaster()");
+			LOGGER.info("query==" + query);
+		}
+
+		return jdbcTemplate.update(query);
+	}
+	
+	
 }

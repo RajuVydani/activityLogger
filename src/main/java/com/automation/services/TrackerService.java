@@ -21,7 +21,7 @@ import com.automation.exceptions.CustomException;
 import com.automation.exceptions.ValidationException;
 import com.automation.idao.IAgentDAO;
 import com.automation.idao.IPolicyDAO;
-
+import com.automation.model.Admin;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
 import com.automation.vo.Policy;
@@ -125,7 +125,7 @@ public class TrackerService {
 			// throw new NullPointerException();
 			// }
 
-			int responseUpdateSeconds = 0;
+			int responseUpdateSeconds = 90;
 			if (serviceName.trim().equalsIgnoreCase("storeagentdata")) {
 
 				Agent agent = new Agent();
@@ -176,8 +176,36 @@ public class TrackerService {
 				}
 
 				serviceStatus = "success";
-
-				responseUpdateSeconds = agentDAO.idleInterval();
+				String projectId="";
+				String subProjectId="";
+				String locationId="";
+				
+			  List<Agent> fetchProjectDetails=agentDAO.fetchProjectDetails(jsonagent);
+				for (Agent projectlist : fetchProjectDetails) {
+					
+				 projectId=projectlist.getProjectId();
+				  subProjectId=projectlist.getSubProjectId();
+					  locationId=projectlist.getLocation();
+				}
+	
+				if(projectId.trim().equalsIgnoreCase("") || subProjectId.trim().equalsIgnoreCase("")
+						|| locationId.trim().equalsIgnoreCase("") || projectId == null || subProjectId == null || locationId == null)
+				{
+					responseUpdateSeconds=90;
+				}
+				else
+				{
+					Agent idleIntervalInput=new Agent();
+					idleIntervalInput.setProjectId(projectId);
+					idleIntervalInput.setSubProjectId(subProjectId);
+					idleIntervalInput.setLocation(locationId);
+					 List<Agent> fetchidleInterval=agentDAO.idleInterval(idleIntervalInput);
+						for (Agent fetchidleIntervallist : fetchidleInterval) {
+							
+							responseUpdateSeconds = fetchidleIntervallist.getIdleInterval();
+						}
+			
+				}
 				responseagent.setIdleInterval(responseUpdateSeconds);
 
 			}

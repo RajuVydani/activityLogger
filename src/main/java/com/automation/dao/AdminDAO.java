@@ -161,17 +161,21 @@ public class AdminDAO implements IAdminDAO {
 		  }
 		return jdbcTemplate.update(query);
 	}
+	
 	public List<Admin> fetchPrevilegeId(Admin admin) {
 		  if (LOGGER.isInfoEnabled()) {
 				LOGGER.info("inside fetchPrevilegeId()");
-		LOGGER.info("SELECT PRIVILEGES_ID FROM USER_PRIVILEGES WHERE USER_TYPE='"+admin.getUserType()+"'");
+		LOGGER.info("SELECT P.PRIVILEGES_ID,P.VIEW_ONLY,P.PDF_EXPORT,P.CSV_EXPORT,P.EXCEL_EXPORT,P.PRINT FROM USER_PRIVILEGES P,USER_DETAILS U WHERE P.PRIVILEGES_ID=U.PRIVILEGES_ID AND U.USER_ID="+admin.getUserId());
 		  }
-		return jdbcTemplate.query("SELECT PRIVILEGES_ID FROM USER_PRIVILEGES WHERE USER_TYPE='"+admin.getUserType()+"'", new RowMapper<Admin>() {
+		return jdbcTemplate.query("SELECT P.PRIVILEGES_ID,P.VIEW_ONLY,P.PDF_EXPORT,P.CSV_EXPORT,P.EXCEL_EXPORT,P.PRINT FROM USER_PRIVILEGES P,USER_DETAILS U WHERE P.PRIVILEGES_ID=U.PRIVILEGES_ID AND U.USER_ID="+admin.getUserId(), new RowMapper<Admin>() {
 					public Admin mapRow(ResultSet resultset, int rownumber) throws SQLException {
 						Admin admin = new Admin();
 						admin.setPriviledgeId(resultset.getString(1));
-				 
-					 
+						admin.setViewOnly(resultset.getString(2));
+						admin.setPdfExport(resultset.getString(3));
+						admin.setCsvExport(resultset.getString(4));
+						admin.setExcelExport(resultset.getString(2));
+						admin.setPrintOption(resultset.getString(2));
 
 						return admin;
 					}
@@ -179,6 +183,121 @@ public class AdminDAO implements IAdminDAO {
 
 	}
 	
+	public List<Admin> fetchProjectId(Admin admin) {
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside fetchPrevilegeId()");
+		LOGGER.info("SELECT PROJECT_ID,LOCATION_ID FROM WHERE AGENT_MASTER WHERE AGENT_ID="+admin.getUserId());
+		  }
+		return jdbcTemplate.query("SELECT PROJECT_ID,LOCATION_ID FROM WHERE AGENT_MASTER WHERE AGENT_ID="+admin.getUserId(), new RowMapper<Admin>() {
+					public Admin mapRow(ResultSet resultset, int rownumber) throws SQLException {
+						Admin admin = new Admin();
+						admin.setProjectId(resultset.getString(1));
+						admin.setLocationId(resultset.getString(2));
+
+						return admin;
+					}
+				});
+
+	}
+	
+	
+	public List<Admin> getActHrsTLLevel(Admin admin) {
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside consolidateActivityHrsForTeamLeadSupervisor()");
+		LOGGER.info("select ROUND(SUM(PROD_SUM)/60,2),ROUND(SUM(IDLE_SUM)/60,2),ROUND(AVG(PROD_SUM)/60,2),ROUND(AVG(IDLE_SUM)/60,2) from MONTH_MASTER WHERE MONTH="+admin.getMonth()+
+				" AND YEAR="+admin.getYear()+" AND HCM_SUPERVISOR_ID IN ("+admin.getSupervisorList()+")");
+		  }
+		return jdbcTemplate.query("select ROUND(SUM(PROD_SUM)/60,2),ROUND(SUM(IDLE_SUM)/60,2),ROUND(AVG(PROD_SUM)/60,2),ROUND(AVG(IDLE_SUM)/60,2) from MONTH_MASTER WHERE MONTH="+admin.getMonth()+
+				" AND YEAR="+admin.getYear()+" AND HCM_SUPERVISOR_ID IN ("+admin.getSupervisorList()+")", new RowMapper<Admin>() {
+					public Admin mapRow(ResultSet resultset, int rownumber) throws SQLException {
+						Admin admin = new Admin();
+						admin.setProdSum(resultset.getString(1));
+						admin.setIdleSum(resultset.getString(2));
+						admin.setProdAvg(resultset.getString(3));
+						admin.setIdleAvg(resultset.getString(4));
+						return admin;
+					}
+				});
+
+	}
+	
+	public List<Admin> getActHrsProjectLevel(Admin admin) {
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside getActHrsProjectLevel()");
+		LOGGER.info("select ROUND(SUM(PROD_SUM)/60,2),ROUND(SUM(IDLE_SUM)/60,2),ROUND(AVG(PROD_SUM)/60,2),ROUND(AVG(IDLE_SUM)/60,2) from MONTH_MASTER WHERE MONTH="+admin.getMonth()+
+				" AND YEAR="+admin.getYear()+" AND PROJECT_ID ="+admin.getSupervisorList()+" AND LOCATION='"+admin.getLocationId()+"'");
+		  }
+		return jdbcTemplate.query("select ROUND(SUM(PROD_SfetchProjectIdUM)/60,2),ROUND(SUM(IDLE_SUM)/60,2),ROUND(AVG(PROD_SUM)/60,2),ROUND(AVG(IDLE_SUM)/60,2) from MONTH_MASTER WHERE MONTH="+admin.getMonth()+
+				" AND YEAR="+admin.getYear()+" AND PROJECT_ID ="+admin.getSupervisorList()+" AND LOCATION='"+admin.getLocationId()+"'", new RowMapper<Admin>() {
+					public Admin mapRow(ResultSet resultset, int rownumber) throws SQLException {
+						Admin admin = new Admin();
+						admin.setProdSum(resultset.getString(1));
+						admin.setIdleSum(resultset.getString(2));
+						admin.setProdAvg(resultset.getString(3));
+						admin.setIdleAvg(resultset.getString(4));
+						return admin;
+					}
+				});
+
+	}
+ 
+	
+	
+	public List<Admin> fechAgentsUnderSupervisor(Admin admin) {
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside fechAgentsUnderSupervisor()");
+		LOGGER.info("select AGENT_ID from AGENT_MASTER WHERE HCM_SUPERVISOR_ID IN("+admin.getSupervisorList()+")");
+		  }
+		return jdbcTemplate.query("select AGENT_ID from AGENT_MASTER WHERE HCM_SUPERVISOR_ID IN ("+admin.getSupervisorList()+")", new RowMapper<Admin>() {
+					public Admin mapRow(ResultSet resultset, int rownumber) throws SQLException {
+						Admin admin = new Admin();
+						admin.setUserId(resultset.getString(1));
+						return admin;
+					}
+				});
+
+	}
+	
+ 
+	
+	public List<Admin> fetchProjectIdUnderProjectManager(Admin admin) {
+		  if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("inside fetchProjectIdUnderProjectManager()");
+		LOGGER.info("select PROJECT_ID,LOCATION_ID from AGENT_MASTER WHERE AGENT_ID ="+admin.getUserId());
+		  }
+		return jdbcTemplate.query("select PROJECT_ID,LOCATION_ID from AGENT_MASTER WHERE AGENT_ID ="+admin.getUserId(), new RowMapper<Admin>() {
+					public Admin mapRow(ResultSet resultset, int rownumber) throws SQLException {
+						Admin admin = new Admin();
+						admin.setProjectId(resultset.getString(1));
+						admin.setLocationId(resultset.getString(2));
+						return admin;
+					}
+				});
+
+	}
+	
+	
+	public int getAgentsTLLevel(Admin admin) {
+
+		String query = 	"select COUNT(*) from MONTH_MASTER WHERE MONTH="+admin.getMonth()+
+				" AND YEAR="+admin.getYear()+" AND HCM_SUPERVISOR_ID IN ("+admin.getSupervisorList()+")";
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside getAgentsTLLevel()");
+			LOGGER.info("query==" + query);
+		}
+		return jdbcTemplate.queryForInt(query);
+	}
+	
+	public int getAgentsProjectLevel(Admin admin) {
+
+		String query = 	"select COUNT(*) from MONTH_MASTER WHERE MONTH="+admin.getMonth()+
+				" AND YEAR="+admin.getYear()+" AND PROJECT_ID ="+admin.getSupervisorList()+" AND LOCATION='"+admin.getLocationId()+"'";
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside getAgentsProjectLevel()");
+			LOGGER.info("query==" + query);
+		}
+		return jdbcTemplate.queryForInt(query);
+	}
 	public int userUpdation(Admin admin) {
 		 
 		LOGGER.info("inside userInsertion()");
