@@ -7,17 +7,10 @@ import com.automation.vo.Agent;
 public interface IAgentDAO {
 
 	/**
-	 * @param agent
-	 * @return
-	 * @throws Exception
-	 */
-	String getAgentData(Agent agent) throws Exception;
-
-	/**
 	 * @param e
 	 * @return
 	 */
-	int dataInsertionInChromeDetails(Agent e);
+	int TemporaryTableInsert(Agent e);
 
 	/**
 	 * @return
@@ -32,116 +25,56 @@ public interface IAgentDAO {
 	 * @param emailid
 	 * @return
 	 */
-	List<Agent> readChromeTempAgentTransactions();
+	List<Agent> readTemporaryTable();
 
 	/**
 	 * @return
 	 */
- 
-	List<Agent> readAgentDetailsFromAgentMaster(String emailId);
 
-	/**
-	 * @param e
-	 * @return
-	 */
-	List<Agent> calculateActiviyHrs(Agent e);
+	List<Agent> readAgentDetails(String emailId);
 
 	/**
 	 * @param e
 	 * @return
 	 */
-	int dataInsertionInDayMaster(Agent e);
+	List<Agent> activityHrsCalculation(Agent e);
 
 	/**
 	 * @param e
 	 * @return
 	 */
-	public int dataInsertionInDayDetail(Agent agent);
+	int dayMasterInsert(Agent e);
+
+	/**
+	 * @param e
+	 * @return
+	 */
+	public int dayDetailInsert(Agent agent);
 
 	/**
 	 * @param agent
 	 * @return
 	 */
- 
-	int dataInsertionInException(Agent e);
+
+	int exceptionTableInsert(Agent e);
 
 	/**
 	 * @param e
 	 * @return
 	 */
-	int deleteFromChromeException(Agent e);
+	int exceptionTableDelete(Agent e);
 
 	/**
 	 * @param e
 	 * @return
 	 */
-	int deleteFromChromeTempDetail(Agent e);
-
-	/**
-	 * @param managerName
-	 * @param fromDate
-	 * @param toDate
-	 * @return
-	 */
-	List<Agent> fetchAgentsInfoDayWise(String managerName, String fromDate, String toDate);
-
-	/**
-	 * @param managerName
-	 * @param fromDate
-	 * @param toDate
-	 * @return
-	 */
-	List<Agent> fetchAgentsInfoOverall(String managerName, String fromDate, String toDate);
-
-	/**
-	 * @param email_id
-	 * @param loginTime
-	 * @param logOutTime
-	 * @return
-	 */
-	List<Agent> fetchAgentsTransacation(String email_id, String loginTime, String logOutTime);
-
-	/**
-	 * @param emailid
-	 * @param date
-	 * @return
-	 */
-	List<Agent> fetchAgentsLoginLogoutTime(String emailid, String date);
-
-	/**
-	 * @param managerName
-	 * @return
-	 */
-	List<Agent> fetchAgentsProjectId(String managerName);
-
-	/**
-	 * @param managerName
-	 * @return
-	 */
-	List<Agent> fetchAgentsLocation(String managerName);
-
-	/**
-	 * @param managerName
-	 * @return
-	 */
-	List<Agent> fetchAgentsShiftTimings(String managerName);
-
-	/**
-	 * @param managerName
-	 * @param fromDate
-	 * @param toDate
-	 * @param projectId
-	 * @param Location
-	 * @param ShiftTimings
-	 * @return
-	 */
-	List<Agent> fetchAgentsInfoFilterSpecific(Agent e);
+	int temporaryTableDelete(Agent e);
 
 	/**
 	 * @param emailid
 	 * @return
 	 */
-	List<Agent> readChromeExceptionAgentTransactions(String emailid);
+	List<Agent> readExceptionTable(String emailid);
 
 	/**
 	 * @return
@@ -149,13 +82,7 @@ public interface IAgentDAO {
 	/**
 	 * @return
 	 */
-	List<Agent> readChromeExceptionAgentIds();
-
-	/**
-	 * @param agent
-	 * @return
-	 */
-	public List<Agent> fetchdataFromChromeTempDetails(Agent agent);
+	List<Agent> readExceptionTableAgentIds();
 
 	/**
 	 * @param agent
@@ -167,25 +94,25 @@ public interface IAgentDAO {
 	 * @param agent
 	 * @return
 	 */
-	public int checkEntryExsistInDayMaster(Agent agent);
+	public int dayMasterCount(Agent agent);
 
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public List<Agent> getPreviousDayDetailsFromDayMaster(Agent agent);
+	public List<Agent> dayMasterPreviousDayLogout(Agent agent);
 
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public int getDayDetailCount(Agent agent);
+	public int dayDetailCount(Agent agent);
 
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public List<Agent> geLoginTimeFromDayMaster(Agent agent);
+	public List<Agent> getLoginTime(Agent agent);
 
 	/**
 	 * @param e
@@ -195,41 +122,53 @@ public interface IAgentDAO {
 	 * @param e
 	 * @return
 	 */
-	public int dataUpdationInDayMaster(Agent e);
-	
+	public int dayMasterUpdate(Agent e);
+
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public int checkDayDetailLastActivity(Agent agent);
-	
+	public int dayDetailLastActivity(Agent agent);
+
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public int dataUpdationInDayDetails(Agent agent);
+	public int dayDetailUpdate(Agent agent);
+
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public int checkEntryExsistInMonthMaster(Agent agent);
-	
+	public int monthMasterCount(Agent agent);
+
 	/**
 	 * @return
 	 */
-	public List<Agent> readAgentDetailsFromDayMaster(Agent agent) ;
-	
+	public List<Agent> readDayMaster(Agent agent);
+
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public int dataInsertionInMonthMaster(Agent agent);
-	 /**
+	public int monthMasterInsert(Agent agent);
+
+	/**
 	 * @param agent
 	 * @return
 	 */
-	public int dataUpdationInMonthMaster(Agent agent);
-	
+	public int monthMasterUpdate(Agent agent);
+
+	/**
+	 * @param agent
+	 * @return
+	 */
 	public List<Agent> fetchProjectDetails(Agent agent);
+
 	
+	/**
+	 * @param agent
+	 * @return
+	 */
+	public int temporaryBkpTableInsert(Agent agent);
 }

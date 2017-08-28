@@ -7,40 +7,76 @@ import com.automation.vo.Agent;
 
 public interface IAdminDAO {
 
- 
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getPreviledgeId(Admin admin); 
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntDataSubProLvl(Admin admin);
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntCountSubProLvl(Admin admin);
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getSupervisor(Admin admin) ;
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntDataSpecificSubProLvl(Admin admin) ;
+	
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntCountSpecificSubProLvl(Admin admin);
+	
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntDataSpecificProLvl(Admin admin) ;
+	
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntCountSpecificProLvl(Admin admin);
 
-	public List<Admin> fetchUserTypelist();
-	public List<Admin> fetchLocationlist();
-	public List<Admin> fetchProgramlist();
-	public List<Admin> fetchProjectlist();
-	public List<Admin> fetchSubProjectlist();
-	public int userInsertion(Admin admin);
-	public List<Admin> fetchPrevilegeId(Admin admin);
-	public List<Admin> getuserDetails();
-	public List<Admin> getuserDetails(String emailId);
-	public List<Admin> getUserType(Admin admin);
-	public int userUpdation(Admin admin);
-	public int userDeletion(Admin admin);
-	public List<Admin> FetchEmailIds(String criteria);
-	public List<Admin> getProjectList(String programName);
-	public int programInsertion(Admin admin);
-	public List<Admin> getProjectDetails(String projectName);
-	public int projectInsertion(Admin admin);
-	public int subProjectInsertion(Admin admin);
-	public List<Admin> getSubProjectDetails(String subProjectName);
-	public int programTransactionDeletion(Admin admin);
-	public int projectTransactionDeletion(Admin admin);
-	public int subProjectTransactionDeletion(Admin admin);
-	public int checkUserIdExsist(Admin admin);
-	public int checkProgramExsist(Admin admin);
-	public int checkProjectExsist(Admin admin);
 	
-	public List<Admin> getActHrsTLLevel(Admin admin);
-	public int getAgentsTLLevel(Admin admin); 
-	public List<Admin> fechAgentsUnderSupervisor(Admin admin) ;
-	public List<Admin> fetchProjectId(Admin admin);
-	public List<Admin> getActHrsProjectLevel(Admin admin);
-	public int getAgentsProjectLevel(Admin admin) ;
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntDataLoc(Admin admin) ;
 	
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getMntCountLoc(Admin admin);
+	
+	/**
+	 * @param admin
+	 * @return
+	 */
+	public List<Admin> getProjectId(Admin admin);
+
 
 }
