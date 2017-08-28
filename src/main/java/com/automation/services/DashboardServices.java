@@ -1,5 +1,6 @@
 package com.automation.services;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
@@ -17,6 +18,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.automation.dao.AgentDAO;
 import com.automation.exceptions.CustomException;
@@ -25,15 +28,12 @@ import com.automation.idao.IAdminDAO;
 import com.automation.idao.IAgentDAO;
 import com.automation.model.Admin;
 import com.automation.util.AppConstants;
+import com.automation.vo.ActivityCodes;
 import com.automation.vo.Agent;
+import com.automation.vo.Dashboard;
+import com.automation.vo.Metrics;
 import com.automation.vo.ServiceResonse;
 
-//Test url
-//http://localhost:8082/TimeTracker/rest/agent/rajuV@cognizant.com
-/**
- * @author 597125
- *
- */
 /**
  * @author 597125
  *
@@ -49,7 +49,52 @@ public class DashboardServices {
 		this.adminDAO = adminDAO;
 	}
 
- 
+	@RequestMapping("/result")
+	public @ResponseBody Dashboard getDashboard() {
+		
+		ActivityCodes aCodes_current = new ActivityCodes();
+		aCodes_current.setBreaks("30");
+		aCodes_current.setMeals("50");
+		aCodes_current.setCoaching("20");
+		aCodes_current.setHuddle("90");
+		aCodes_current.setFb_training("10");
+		aCodes_current.setNon_fb_training("40");
+		aCodes_current.setTeam_meeting("30");
+		aCodes_current.setWellness_support("10");
+		aCodes_current.setTotal_shrinkage("120");
+		
+		ActivityCodes aCodes_past = new ActivityCodes();
+		aCodes_past.setBreaks("30");
+		aCodes_past.setMeals("50");
+		aCodes_past.setCoaching("20");
+		aCodes_past.setHuddle("90");
+		aCodes_past.setFb_training("10");
+		aCodes_past.setNon_fb_training("40");
+		aCodes_past.setTeam_meeting("30");
+		aCodes_past.setWellness_support("10");
+		aCodes_past.setTotal_shrinkage("220");
+		
+		
+		Metrics lMonth = new Metrics();
+		lMonth.setProductivity("100");
+		lMonth.setProdPercent("98");
+		lMonth.setShrinkage(aCodes_current);
+		lMonth.setHeadCount("250");
+		
+		Metrics cMonth = new Metrics();
+		cMonth.setProductivity("90");
+		cMonth.setProdPercent("72");
+		cMonth.setShrinkage(aCodes_past);
+		cMonth.setHeadCount("120");
+		
+		Dashboard dashboard = new Dashboard();
+		dashboard.setHierarchy(Arrays.asList(new String [] {"PAGES", "COMMERCE", "VIDEOS"}));
+		dashboard.setLocations(Arrays.asList(new String [] {"HYD", "CHN", "PHX"}));
+		dashboard.setPastMonth(lMonth);
+		dashboard.setCurrentMonth(cMonth);
+		
+		return dashboard;
+	}
 
 	@GET
 	@Path("/{param}")
