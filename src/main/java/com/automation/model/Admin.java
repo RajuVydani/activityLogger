@@ -26,6 +26,62 @@ public class Admin {
 	private String printOption;
 	private String prodSum;
 	private String idleSum;
+	private String breakSum;
+	private String mealsSum;
+	private String welnessSupportSum;
+	private String coachingSum;
+	private String teamMeetingSum;
+	private String fbTrainingSum;
+	private String nonFbTrainingSum;
+	private String huddleSum;
+	public String getHuddleSum() {
+		return huddleSum;
+	}
+	public void setHuddleSum(String huddleSum) {
+		this.huddleSum = huddleSum;
+	}
+	public String getBreakSum() {
+		return breakSum;
+	}
+	public void setBreakSum(String breakSum) {
+		this.breakSum = breakSum;
+	}
+	public String getMealsSum() {
+		return mealsSum;
+	}
+	public void setMealsSum(String mealsSum) {
+		this.mealsSum = mealsSum;
+	}
+	public String getWelnessSupportSum() {
+		return welnessSupportSum;
+	}
+	public void setWelnessSupportSum(String welnessSupportSum) {
+		this.welnessSupportSum = welnessSupportSum;
+	}
+	public String getCoachingSum() {
+		return coachingSum;
+	}
+	public void setCoachingSum(String coachingSum) {
+		this.coachingSum = coachingSum;
+	}
+	public String getTeamMeetingSum() {
+		return teamMeetingSum;
+	}
+	public void setTeamMeetingSum(String teamMeetingSum) {
+		this.teamMeetingSum = teamMeetingSum;
+	}
+	public String getFbTrainingSum() {
+		return fbTrainingSum;
+	}
+	public void setFbTrainingSum(String fbTrainingSum) {
+		this.fbTrainingSum = fbTrainingSum;
+	}
+	public String getNonFbTrainingSum() {
+		return nonFbTrainingSum;
+	}
+	public void setNonFbTrainingSum(String nonFbTrainingSum) {
+		this.nonFbTrainingSum = nonFbTrainingSum;
+	}
 	public String getProdSum() {
 		return prodSum;
 	}

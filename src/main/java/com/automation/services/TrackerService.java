@@ -16,15 +16,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.automation.dao.AgentDAO;
-import com.automation.dao.PolicyDAO;
 import com.automation.exceptions.CustomException;
 import com.automation.exceptions.ValidationException;
 import com.automation.idao.IAgentDAO;
-import com.automation.idao.IPolicyDAO;
 import com.automation.model.Admin;
 import com.automation.util.AppConstants;
 import com.automation.vo.Agent;
-import com.automation.vo.Policy;
+import com.automation.vo.ServiceResonse;
 
 //Test url
 //http://localhost:8082/TimeTracker/rest/agent/rajuV@cognizant.com
@@ -40,41 +38,12 @@ import com.automation.vo.Policy;
 public class TrackerService {
 	private final static Logger logger = Logger.getLogger(TrackerService.class);
 	private IAgentDAO agentDAO;
-	private IPolicyDAO policyDAO;
 
-	public void setPolicyDAO(IPolicyDAO policyDAO) {
-		this.policyDAO = policyDAO;
-	}
 
 	public void setAgentDAO(IAgentDAO agentDAO) {
 		this.agentDAO = agentDAO;
 	}
 
-	@GET
-	@Path("/{param}")
-	public Response getMsg(@PathParam("param") String msg) {
-
-		String output = "Hello : " + msg;
-		return Response.status(200).entity(output).build();
-
-	}
-
-	// http://localhost:8082/TimeTracker/rest/agent/data
-	/**
-	 * @return
-	 */
-	@GET
-	@Path("/data")
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response getAgentData() {
-		String output = "Data";
-		System.out.println(AppConstants.METHOD + "-getAgentData()");
-		Agent agent = new Agent();
-		agent.setName("Raju");
-		agent.setEmailId("raju@gmail.com");
-
-		return Response.status(200).entity("success").build();
-	}
 
 	/**
 	 * This method will update Agent Login Time ,Logout Time,Productivity
@@ -93,10 +62,10 @@ public class TrackerService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response storeData(Agent jsonagent) {
-		System.out.println(AppConstants.METHOD + "-getAgentData()*************");
+		System.out.println("calling storeData()...");
  
 		String serviceStatus = "failure";
-		Agent responseagent = new Agent();
+		ServiceResonse responseagent = new ServiceResonse();
 		try {
 
 			String serviceName = jsonagent.getServicename();
@@ -169,7 +138,7 @@ public class TrackerService {
 						updateagent.setToDate(toTime);
 						updateagent.setWebsitesVisited(webistedvisited_updated);
 						updateagent.setActivityCode(activityCode);
-						int insertStatus=agentDAO.dataInsertionInChromeDetails(updateagent);
+						int insertStatus=agentDAO.TemporaryTableInsert(updateagent);
 						logger.info("No Of Rows Inserted : "+insertStatus);
 
 					}
@@ -222,126 +191,6 @@ public class TrackerService {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 				logger.error("Exception occured  while procession request:" + jsonagent + " Exception details :" + e1);
-			}
-		}
-
-		return Response.status(300).entity("failure").build();
-	}
-
-	/**
-	 * This method will check for latest policy and update policy flag
-	 * 
-	 * @param jsonagent
-	 * @return
-	 */
-	@POST
-	@Path("/policy")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response policyupdate(Policy jsonagent) {
-
-		String serviceStatus = "failure";
-		Policy responseagent = new Policy();
-		try {
-
-			String serviceName = jsonagent.getServicename();
-
-			String agentEmailId = jsonagent.getEmailId();
-			String policyFlag = jsonagent.getPolicyFlag();
-
-			// Validations.
-			if (null == serviceName || "undefined".equalsIgnoreCase(serviceName)
-					|| "".trim().equalsIgnoreCase(serviceName)) {
-				throw new ValidationException("Validation Exception :: Service name is empty");
-			}
-
-			if (null == agentEmailId || "undefined".equalsIgnoreCase(agentEmailId)
-					|| "".trim().equalsIgnoreCase(agentEmailId)) {
-				throw new ValidationException("Validation Exception :: Agent Email is empty");
-			}
-
-			if (null == policyFlag || "undefined".equalsIgnoreCase(policyFlag)) {
-				throw new ValidationException("Validation Exception ::Policy Flag is null");
-			}
-
-			// if("error".equalsIgnoreCase(agentName)) {
-			// throw new NullPointerException();
-			// }
-			logger.info("Service Name :" + serviceName);
-			logger.info("Email Id     :" + agentEmailId);
-			if (serviceName.trim().equalsIgnoreCase("policyaccess")) {
-
-				Policy policy = new Policy();
-				// remove white space from email id
-				agentEmailId = agentEmailId.replaceAll("\\s+", "");
-				policy.setEmailId(agentEmailId);
-				List<Policy> policylist = policyDAO.readPolicyFlag(agentEmailId);
-
-				List<Policy> policydetails = policyDAO.readPolicyDetails();
-
-				for (Policy e : policydetails) {
-					responseagent.setEmailId(agentEmailId);
-					responseagent.setPolicyContent(e.getPolicyContent());
-					responseagent.setPolicyTagging(e.getPolicyTagging());
-					responseagent.setPolicyUpdatedOn(e.getPolicyUpdatedOn());
-					logger.info("policy Content :" + (e.getPolicyContent()));
-					logger.info("policy Tagging :" + (e.getPolicyTagging()));
-					logger.info("policy Updated On :" + (e.getPolicyUpdatedOn()));
-				}
-
-			}
-			if (serviceName.trim().equalsIgnoreCase("policyupdate")) {
-
-				Policy policy = new Policy();
-				// remove white space from email id
-				agentEmailId = agentEmailId.replaceAll("\\s+", "");
-				policy.setEmailId(agentEmailId);
-				List<Policy> policylist = policyDAO.readPolicyFlag(agentEmailId);
-
-				String policyflag = "";
-
-				for (Policy e : policylist) {
-					policyflag = e.getPolicyFlag();
-					logger.info("policyflag :" + policyflag);
-
-				}
-
-				if (policyflag.trim().equalsIgnoreCase("true")) {
-
-					List<Policy> policydetails = policyDAO.readPolicyDetails();
-
-					for (Policy e : policydetails) {
-						responseagent.setEmailId(agentEmailId);
-						responseagent.setPolicyContent(e.getPolicyContent());
-						responseagent.setPolicyTagging(e.getPolicyTagging());
-						responseagent.setPolicyUpdatedOn(e.getPolicyUpdatedOn());
-						logger.info("policy Content :" + (e.getPolicyContent()));
-						logger.info("policy Tagging :" + (e.getPolicyTagging()));
-						logger.info("policy Updated On :" + (e.getPolicyUpdatedOn()));
-					}
-
-				}
-			}
-			if (serviceName.trim().equalsIgnoreCase("policyupdateflag")) {
-
-				Policy policy = new Policy();
-				// remove white space from email id
-				agentEmailId = agentEmailId.replaceAll("\\s+", "");
-				policy.setEmailId(agentEmailId);
-				int status = policyDAO.updatePolicyFlag(policy);
-
-			}
-			logger.info("Request Processed Successfully");
-			return Response.status(200).entity(responseagent).build();
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error("Exception occured  while procession request:" + jsonagent + " Exception details :" + e);
-			try {
-				throw new CustomException();
-			} catch (CustomException e1) {
-				// TODO Auto-generated catch block
-				logger.error("Exception occured  while procession request:" + jsonagent + " Exception details :" + e1);
-				e1.printStackTrace();
 			}
 		}
 

@@ -1,7 +1,9 @@
 package com.automation.dao;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -13,10 +15,12 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
 import com.automation.idao.IAgentDAO;
@@ -54,59 +58,32 @@ public class AgentDAO implements IAgentDAO {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.automation.idao.IAgentDAO#getAgentData(com.automation.vo.Agent)
-	 * This method will fetch Agent Information from Agent Master
-	 */
-	public String getAgentData(Agent agent) throws Exception {
-
-		// Query...
-		String sql = "SELECT AGENT_NAME,SHIFT_TIMINGS FROM AGENT_MASTER";
-
-		if (null == jdbcTemplate) {
-			LOGGER.info("Could not connect to database !!!");
-		}
-
-		// Executing the query.
-		jdbcTemplate.query(sql, new ResultSetExtractor<List<Agent>>() {
-			public List<Agent> extractData(ResultSet resultset) throws SQLException, DataAccessException {
-				List<Agent> list = new ArrayList<Agent>();
-				Agent agent;
-				while (resultset.next()) {
-					agent = new Agent();
-					agent.setName(resultset.getString("AGENT_NAME"));
-					agent.setShiftTimings(resultset.getString("SHIFT_TIMINGS"));
-					list.add(agent);
-				}
-
-				return list;
-			}
-		});
-		return "Successfully";
-	}
+	@Value("${select.Exception}")
+	private String selectException;
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#readChromeExceptionAgentTransactions(java.
-	 * lang.String) This method will fetch Agent Transactions From Chrome
-	 * Exception Table
+	 * @see com.automation.idao.IAgentDAO#readExceptionTable(java. lang.String)
+	 * This method will fetch Agent Transactions From Chrome Exception Table
 	 */
-	public List<Agent> readChromeExceptionAgentTransactions(String emailid) {
-		LOGGER.info("inside readChromeExceptionAgentTransactions()");
+	public List<Agent> readExceptionTable(String emailid) {
+		
 
-		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
-		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
-		String query = "select * from CHROME_EXCEPTION_DETAILS where EMAIL_ID='" + emailid.trim()
-				+ "' ORDER BY FROM_TIME";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside readChromeExceptionAgentTransactions()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("calling readExceptionTable()");
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		
+		
+		
+		return jdbcTemplate.query(selectException,
+        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, emailid.trim());
+            }
+        }
+        , new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 				Agent agent = new Agent();
 				agent.setEmailId(rs.getString(1));
@@ -121,17 +98,23 @@ public class AgentDAO implements IAgentDAO {
 		});
 	}
 
-	public List<Agent> readChromeTempAgentTransactions() {
-		LOGGER.info("inside readChromeTempAgentTransactions()");
+	@Value("${select.Temporary}")
+	private String selectTemporary;
 
-		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
-		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
-		String query = "select * from CHROME_TEMP_DETAILS ORDER BY EMAIL_ID,FROM_TIME";
+	
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#readTemporaryTable()
+	 * This method will fetch agent transactions from Chrome Temp Table
+	 */
+	public List<Agent> readTemporaryTable() {
+		
+	 
+
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside readChromeExceptionAgentTransactions()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("calling readTemporaryTable()");
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectTemporary, new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
 				Agent agent = new Agent();
 				agent.setEmailId(rs.getString(1));
@@ -146,54 +129,25 @@ public class AgentDAO implements IAgentDAO {
 		});
 	}
 
+	@Value("${select.ExceptionAgentIds}")
+	private String selectExceptionAgentIds;
+	
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.automation.idao.IAgentDAO#readChromeTempAgentIds() This method
-	 * will fetch Agent Email Ids From Chrome Temp Table
-	 */
-	public List<Agent> readChromeTempAgentIds() {
-		LOGGER.info("inside readChromeTempAgentIds()");
-
-		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
-		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
-		String query = "select DISTINCT EMAIL_ID from CHROME_TEMP_DETAILS  ORDER BY EMAIL_ID,FROM_TIME";
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
-			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-				Agent e = new Agent();
-				e.setEmailId(resultset.getString(1));
-
-				return e;
-			}
-		});
-	}
-
-	///
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.automation.idao.IAgentDAO#readChromeExceptionAgentIds() This
+	 * @see com.automation.idao.IAgentDAO#readExceptionTableAgentIds() This
 	 * method will fetch Agent Email Ids From Chrome Exception Table
 	 */
-	public List<Agent> readChromeExceptionAgentIds() {
+	public List<Agent> readExceptionTableAgentIds() {
 
-		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
-		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
-		String query = "select DISTINCT E.EMAIL_ID from CHROME_EXCEPTION_DETAILS E,AGENT_MASTER A WHERE A.EMAIL_ID=E.EMAIL_ID ORDER BY E.EMAIL_ID";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside readChromeExceptionAgentIds()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("calling readExceptionTableAgentIds()");
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
-			/*
-			 * (non-Javadoc)
-			 * 
-			 * @see org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
-			 * ResultSet, int)
-			 */
+		return jdbcTemplate.query(selectExceptionAgentIds, new RowMapper<Agent>() {
+		
 			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
 				Agent e = new Agent();
 				e.setEmailId(resultset.getString(1));
@@ -203,233 +157,350 @@ public class AgentDAO implements IAgentDAO {
 		});
 	}
 
+	@Value("${select.AgentMaster}")
+	private String selectAgentMaster;
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#readAgentDetailsFromAgentMaster(java.lang.
-	 * String) This method will fetch Agent details From Agent Master
+	 * @see com.automation.idao.IAgentDAO#readAgentDetails(java.lang. String)
+	 * This method will fetch Agent details From Agent Master
 	 */
-	public List<Agent> readAgentDetailsFromAgentMaster(String emailId) {
+	public List<Agent> readAgentDetails(String emailId) {
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside readAgentDetailsFromAgentMaster()");
-			LOGGER.info("query=="
-					+ "select AGENT_NAME,LOCATION_ID,HCM_SUPERVISOR_ID,HCM_SUPERVISOR_NAME,PROJECT_ID,BILLABLE,ON_OFF,AGENT_ID,SUB_PROJECT_ID,PROJECT_NAME,SUB_PROJECT_NAME from AGENT_MASTER WHERE EMAIL_ID='"
-					+ emailId + "'");
+			LOGGER.info("calling readAgentDetails()");
+			
 		}
+		return jdbcTemplate.query(selectAgentMaster,
+		        new PreparedStatementSetter() {
+		            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+		                preparedStatement.setString(1, emailId.trim());
+		            }
+		        }
+		        , new RowMapper<Agent>() {
+							/*
+							 * (non-Javadoc)
+							 * 
+							 * @see
+							 * org.springframework.jdbc.core.RowMapper#mapRow(
+							 * java.sql. ResultSet, int)
+							 */
+							public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+								Agent agent = new Agent();
+								agent.setName(rs.getString(1));
 
-		return jdbcTemplate.query(
-				"select IFNULL(AGENT_NAME,''),IFNULL(LOCATION_ID,''),IFNULL(HCM_SUPERVISOR_ID,0),IFNULL(HCM_SUPERVISOR_NAME,''),IFNULL(PROJECT_ID,0),IFNULL(BILLABLE,''),IFNULL(ON_OFF,''),IFNULL(AGENT_ID,0),IFNULL(SUB_PROJECT_ID,0),IFNULL(PROJECT_NAME,''),IFNULL(SUB_PROJECT_NAME,'') from AGENT_MASTER WHERE EMAIL_ID='"
-						+ emailId + "'",
-				new RowMapper<Agent>() {
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
-					 * ResultSet, int)
-					 */
-					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
-						Agent agent = new Agent();
-						agent.setName(rs.getString(1));
+								agent.setLocation(rs.getString(2));
+								agent.setHcmSupervisorId(rs.getString(3));
+								agent.setHcmSupervisorName(rs.getString(4));
+								agent.setProjectId(rs.getString(5));
+								agent.setBillable(rs.getString(6));
+								agent.setOnshoreOffshore(rs.getString(7));
+								agent.setAgentId(rs.getString(8));
+								agent.setSubProjectId(rs.getString(9));
+								agent.setProjectName(rs.getString(10));
+								agent.setSubProjectName(rs.getString(11));
 
-						agent.setLocation(rs.getString(2));
-						agent.setHcmSupervisorId(rs.getString(3));
-						agent.setHcmSupervisorName(rs.getString(4));
-						agent.setProjectId(rs.getString(5));
-						agent.setBillable(rs.getString(6));
-						agent.setOnshoreOffshore(rs.getString(7));
-						agent.setAgentId(rs.getString(8));
-						agent.setSubProjectId(rs.getString(9));
-						agent.setProjectName(rs.getString(10));
-						agent.setSubProjectName(rs.getString(11));
-
-						return agent;
-					}
-				});
+								return agent;
+							}
+						});
 	}
 
+	
+	
+	@Value("${insert.DayMaster}")
+	private String insertDayMaster;
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#dataInsertionInDayMaster(com.automation.vo.
+	 * @see com.automation.idao.IAgentDAO#dayMasterInsert(com.automation.vo.
 	 * Agent) This method will insert data in Day Master
 	 */
-	public int dataInsertionInDayMaster(Agent e) {
-		LOGGER.info("inside dataInsertionInDayMaster()");
-		String query = "insert into DAY_MASTER(`DATE`, `EMAIL_ID`, `AGENT_NAME`,`SHIFT_DETAILS`,  `LOGIN_TIME`, `LOGOUT_TIME`,`LOCATION_ID`,`HCM_SUPERVISOR_ID`,`HCM_SUPERVISOR_NAME`,`PROJECT_ID`,`BILLABLE`,`ON_OFF`,`AGENT_ID`,`SUB_PROJECT_ID`,`PROJECT_NAME`,`SUB_PROJECT_NAME`) values('"
-				+ e.getDATE() + "','" + e.getEmailId() + "','" + e.getName() + "','" + e.getShiftTimings() + "','"
-				+ e.getLoginTime() + "','" + e.getLogoutTime() + "','" + e.getLocation() + "'," + e.getHcmSupervisorId()
-				+ ",'" + e.getHcmSupervisorName() + "'," + e.getProjectId() + ",'" + e.getBillable() + "','"
-				+ e.getOnshoreOffshore() + "'," + e.getAgentId() + "," + e.getSubProjectId() + ",'" + e.getProjectName()
-				+ "','" + e.getSubProjectName() + "')";
+	public int dayMasterInsert(Agent e) {
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("query==" + query);
+			LOGGER.info("calling dayMasterInsert()");
 		}
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(insertDayMaster,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	preparedStatement.setString(1, e.getDATE());
+                preparedStatement.setString(2, e.getEmailId());
+                preparedStatement.setString(3, e.getName());
+                preparedStatement.setString(4, e.getShiftTimings());
+                preparedStatement.setString(5, e.getLoginTime());
+                preparedStatement.setString(6, e.getLogoutTime());
+                preparedStatement.setString(7, e.getLocation());
+                preparedStatement.setInt(8, Integer.parseInt(e.getHcmSupervisorId()));
+                preparedStatement.setString(9, e.getHcmSupervisorName());
+                preparedStatement.setInt(10, Integer.parseInt(e.getProjectId()));
+                preparedStatement.setString(11, e.getBillable());
+                preparedStatement.setString(12, e.getOnshoreOffshore());
+                preparedStatement.setInt(13, Integer.parseInt(e.getAgentId()));
+                preparedStatement.setInt(14, Integer.parseInt(e.getSubProjectId()));
+                preparedStatement.setString(15, e.getProjectName());
+                preparedStatement.setString(16, e.getSubProjectName());
+                
+                
+                
+                
+            }
+        });
 	}
 
-	public int dataUpdationInDayMaster(Agent e) {
-		LOGGER.info("inside dataUpdationInDayMaster()");
-		String query = "UPDATE DAY_MASTER SET LOGOUT_TIME='" + e.getLogoutTime() + "'," + e.getActivityHrs()
-				+ " WHERE EMAIL_ID='" + e.getEmailId() + "' AND DATE='" + e.getDATE() + "'";
-
+	@Value("${update.DayMaster}")
+	private String updateDayMaster;
+	
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#dayMasterUpdate(com.automation.vo.Agent)
+	 * This method will update data Day Master table.
+	 */
+	public int dayMasterUpdate(Agent e) {
+		
+	 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside dayMasterUpdate()");
 		}
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(updateDayMaster,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	preparedStatement.setString(1, e.getLogoutTime());
+            	
+            	
+            	preparedStatement.setString(1, e.getLogoutTime());
+            	preparedStatement.setFloat(2, Float.parseFloat(e.getProdSum()));
+            	preparedStatement.setFloat(3, Float.parseFloat(e.getIdleSum()));
+            	preparedStatement.setFloat(4, Float.parseFloat(e.getBreakSum()));
+            	preparedStatement.setFloat(5, Float.parseFloat(e.getMealsSum()));
+            	preparedStatement.setFloat(6, Float.parseFloat(e.getHuddleSum()));
+            	preparedStatement.setFloat(7, Float.parseFloat(e.getWelnessSupportSum()));
+            	preparedStatement.setFloat(8, Float.parseFloat(e.getCoachingSum()));
+            	preparedStatement.setFloat(9, Float.parseFloat(e.getTeamMeetingSum()));
+            	preparedStatement.setFloat(10, Float.parseFloat(e.getFbTrainingSum()));
+            	preparedStatement.setFloat(11, Float.parseFloat(e.getNonFbTrainingSum()));
+            	preparedStatement.setString(12, e.getEmailId().trim());
+                preparedStatement.setString(13, e.getDATE());
+            
+                
+                
+            }
+        });
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
 	 * com.automation.idao.IAgentDAO#calculateTempActiviyHrs(com.automation.vo.
-	 * Agent) This method will calculate Activity Hrs For Chrome Temp Table
+	 * Agent) This method will calculate Activity Hrs From Day detail Table
 	 */
-	public List<Agent> calculateActiviyHrs(Agent agent) {
+	
+	@Value("${select.ActivityHours}")
+	private String selectActivityHours;
+	public List<Agent> activityHrsCalculation(Agent agent) {
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("inside calculateTempActiviyHrs()");
 
-			LOGGER.info("query=="
-					+ "select SUM(TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME)),ACTIVITY_CODE FROM DAY_DETAIL WHERE EMAIL_ID='"
-					+ agent.getEmailId() + "'  AND FROM_TIME >='" + agent.getFromDate() + "' AND TO_TIME <='"
-					+ agent.getToDate() + "' GROUP BY ACTIVITY_CODE");
 		}
 
-		return jdbcTemplate.query(
-				"select SUM(TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME)),ACTIVITY_CODE FROM DAY_DETAIL WHERE EMAIL_ID='"
-						+ agent.getEmailId() + "'  AND FROM_TIME >='" + agent.getFromDate() + "' AND TO_TIME <='"
-						+ agent.getToDate() + "' GROUP BY ACTIVITY_CODE",
-				new RowMapper<Agent>() {
-					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
-						Agent agent = new Agent();
-						String seconds = rs.getString(1);
-						float minutes = (Float.parseFloat(seconds) / 60);
-					 
+		return jdbcTemplate
+				.query(selectActivityHours,
+		        new PreparedStatementSetter() {
+		            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+		                preparedStatement.setString(1, agent.getEmailId().trim());
+		                preparedStatement.setString(2, agent.getFromDate());
+		                preparedStatement.setString(3, agent.getToDate());
+		            }
+		        }
+		        , new RowMapper<Agent>() {
+							public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
+								Agent agent = new Agent();
+								String seconds = rs.getString(1);
+								float minutes = (Float.parseFloat(seconds) / 60);
 
-						agent.setActivityHrs(String.valueOf(minutes));
-						agent.setActivityCode(rs.getString(2));
+								agent.setActivityHrs(String.valueOf(minutes));
+								agent.setActivityCode(rs.getString(2));
 
-						return agent;
-					}
-				});
+								return agent;
+							}
+						});
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#deleteFromChromeTempDetail(com.automation.
-	 * vo.Agent) This method will delete day from Chrome Temp Detail.
+	 * @see com.automation.idao.IAgentDAO#temporaryTableDelete(com.automation.
+	 * vo.Agent) 
+	 * This method will delete data from Chrome Temp Detail.
 	 */
-	public int deleteFromChromeTempDetail(Agent e) {
+	
+	@Value("${delete.Temporary}")
+	private String deleteTemporary;
+	public int temporaryTableDelete(Agent e) {
 
-		String query = "DELETE FROM CHROME_TEMP_DETAILS " + "WHERE EMAIL_ID='" + e.getEmailId() + "'  AND FROM_TIME ='"
-				+ e.getFromDate() + "'";
+		 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside deleteFromChromeTempDetail()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside temporaryTableDelete()");
+			
 		}
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(deleteTemporary,    new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            
+            	
+            	
+            	preparedStatement.setString(1, e.getEmailId());
+            	preparedStatement.setString(2, e.getFromDate());
+            
+                
+                
+            }
+        });
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * com.automation.idao.IAgentDAO#dataInsertionInException(com.automation.vo.
+	 * com.automation.idao.IAgentDAO#exceptionTableInsert(com.automation.vo.
 	 * Agent) This method will insert data in Chrome Exception Table.
 	 */
-	public int dataInsertionInException(Agent agent) {
+	
+	@Value("${insert.Exception}")
+	private String insertException;
+	public int exceptionTableInsert(Agent agent) {
 
-		String query = "INSERT INTO `CHROME_EXCEPTION_DETAILS` (`EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE`,`ERROR_DESC`)"
-				+ "VALUES('" + agent.getEmailId() + "','" + agent.getFromDate() + "','" + agent.getToDate() + "','"
-				+ agent.getWebsitesVisited() + "'," + agent.getActivityCode() + ",'" + agent.getErrorDesc() + "')";
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataInsertionInException()");
-			LOGGER.info("query==" + query);
-
-		}
-		return jdbcTemplate.update(query);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#dataInsertionInDayDetailFromTempDetails(com
-	 * .automation.vo.Agent) This method will move Transactions from Chrome Temp
-	 * Table to Day Detail Table
-	 */
-	public int dataInsertionInDayDetail(Agent agent) {
-
-		String query = "INSERT INTO `DAY_DETAIL` (`DATE`,`SNO`,`EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE`) VALUES('"
-				+ agent.getDATE() + "'," + (agent.getRownum()) + ",'" + agent.getEmailId() + "','" + agent.getFromDate()
-				+ "','" + agent.getToDate() + "','" + agent.getWebsitesVisited() + "'," + agent.getActivityCode() + ")";
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataInsertionInDayDetail()");
-			LOGGER.info("query==" + query);
-		}
-
-		return jdbcTemplate.update(query);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#dataInsertionInDayDetailFromTempDetails(com
-	 * .automation.vo.Agent) This method will move Transactions from Chrome Temp
-	 * Table to Day Detail Table
-	 */
-	public List<Agent> fetchdataFromChromeTempDetails(Agent agent) {
-
-		String query = "SELECT `EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE` FROM `CHROME_TEMP_DETAILS`"
-				+ " WHERE EMAIL_ID='" + agent.getEmailId() + "' AND FROM_TIME >='" + agent.getFromDate()
-				+ "' AND TO_TIME <='" + agent.getToDate() + "' ORDER BY FROM_TIME";
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside fetchdataFromChromeTempDetails()");
-
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
-			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-				Agent agent = new Agent();
-
-				agent.setEmailId(resultset.getString(1));
-				agent.setFromDate(resultset.getString(2));
-				agent.setToDate(resultset.getString(3));
-				agent.setWebsitesVisited(resultset.getString(4));
-				agent.setActivityCode(resultset.getString(5));
-				agent.setRownum(rownumber);
-
-				return agent;
-			}
-		});
-	}
-
-	/* (non-Javadoc)
-	 * @see com.automation.idao.IAgentDAO#fetchShiftDetails(com.automation.vo.Agent)
-	 */
-	public List<Agent> fetchShiftDetails(Agent agent) {
-String location=agent.getLocation();
-String query="";
-		 
-		  query = "SELECT SHIFT_FROM,SHIFT_TO " + "FROM SHIFT_TIMINGS "
-				+ " WHERE  CAST(SUBTIME(SHIFT_FROM, '00:30:00') AS TIME) <= '" + agent.getStartTime() + "' AND "
-				+ "CAST(ADDTIME(SHIFT_FROM, '00:30:00') AS TIME) >= '" + agent.getStartTime() + "' AND LOCATION_ID='"+
-				location+"' AND PROJECT_ID="+agent.getProjectId()+" AND SUB_PROJECT_ID="+agent.getSubProjectId();
  
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside exceptionTableInsert()");
+		
+
+		}
+		return jdbcTemplate.update(insertException,    new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            
+            	preparedStatement.setString(1, agent.getEmailId());
+            	preparedStatement.setString(2, agent.getFromDate());
+            	preparedStatement.setString(3, agent.getToDate());
+            	preparedStatement.setString(4, agent.getWebsitesVisited());
+            	preparedStatement.setInt(5, Integer.parseInt(agent.getActivityCode()));
+            	preparedStatement.setString(6, agent.getErrorDesc());
+            
+                
+                
+            }
+        });
+	}
+
+	@Value("${insert.TemporaryBkp}")
+	private String insertTemporaryBkp;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#temporaryBkpTableInsert(com.automation.vo.Agent)
+	 * This method will insert data in Chrome Temp Back Up Table.
+	 */
+	public int temporaryBkpTableInsert(Agent agent) {
+
+ 
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside temporaryBkpTableInsert()");
+		
+
+		}
+		return jdbcTemplate.update(insertTemporaryBkp,    new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            
+            	preparedStatement.setString(1, agent.getEmailId());
+            	preparedStatement.setString(2, agent.getFromDate());
+            	preparedStatement.setString(3, agent.getToDate());
+            	preparedStatement.setString(4, agent.getWebsitesVisited());
+            	preparedStatement.setInt(5, Integer.parseInt(agent.getActivityCode()));
+            	
+            
+                
+                
+            }
+        });
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dataInsertionInDayDetailFromTempDetails(com
+	 * .automation.vo.Agent)
+	 *  This method will insert data in Day Detail Table
+	 */
+	@Value("${insert.DayDetail}")
+	private String insertDayDetail;
+	public int dayDetailInsert(Agent agent) {
+
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside dayDetailInsert()");
+			
+		}
+
+		return jdbcTemplate.update(insertDayDetail,    new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	preparedStatement.setString(1, agent.getDATE());
+            	preparedStatement.setInt(2, agent.getRownum());
+            	preparedStatement.setString(3, agent.getEmailId());
+            	preparedStatement.setString(4, agent.getFromDate());
+            	preparedStatement.setString(5, agent.getToDate());
+            	preparedStatement.setString(6, agent.getWebsitesVisited());
+            	preparedStatement.setInt(7, Integer.parseInt(agent.getActivityCode()));
+            	
+            
+                
+                
+            }
+        });
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#fetchShiftDetails(com.automation.vo.Agent)
+	 * This method will check Shift Timings
+	 */
+	@Value("${select.ShiftTimings}")
+	private String selectShiftTimings;
+	public List<Agent> fetchShiftDetails(Agent agent) {
+		String location = agent.getLocation();
+
+
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("inside fetchShiftDetails()");
 
-			LOGGER.info("query==" + query);
+	
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectShiftTimings,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, agent.getStartTime());
+                preparedStatement.setString(2, agent.getStartTime());
+                preparedStatement.setString(3, location);
+                if(agent.getProjectId().trim().equalsIgnoreCase(""))
+                {
+                	preparedStatement.setInt(4, 0);
+                }
+                else
+                {
+                	preparedStatement.setInt(4, Integer.parseInt(agent.getProjectId()));	
+                	
+                }
+                
+                if(agent.getProjectId().trim().equalsIgnoreCase(""))
+                {
+                	preparedStatement.setInt(5, 0);
+                }
+                else
+                {
+                	
+                	preparedStatement.setInt(5, Integer.parseInt(agent.getSubProjectId()));
+                }
+                
+                
+            }
+        }, new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
 				Agent agent = new Agent();
 
@@ -441,18 +512,26 @@ String query="";
 		});
 	}
 	
-	
-	
+	@Value("${select.ProjectDetails}")
+	private String selectProjectDetails;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#fetchProjectDetails(com.automation.vo.Agent)
+	 * This method will fetch project details.
+	 */
 	public List<Agent> fetchProjectDetails(Agent agent) {
 
-		String query = "SELECT PROJECT_ID,SUB_PROJECT_ID,LOCATION_ID " + "FROM AGENT_MASTER "
-				+ " WHERE  EMAIL_ID='"+agent.getEmailId()+"'";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside fetchShiftDetails()");
+			LOGGER.info("inside fetchProjectDetails()");
 
-			LOGGER.info("query==" + query);
+		
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectProjectDetails,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, agent.getEmailId().trim());
+               
+            }
+        }, new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
 				Agent agent = new Agent();
 
@@ -464,129 +543,112 @@ String query="";
 			}
 		});
 	}
-	
-	
-	
 
-	/**
-	 * @param agent
-	 * @return
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#exceptionTableDelete(com.automation.vo
+	 * .Agent) 
+	 * This method will delete data from Chrome Exception Table.
 	 */
-	public List<Agent> fetchdataFromChromeExceptionDetails(Agent agent) {
+	@Value("${delete.Exception}")
+	private String deleteException;
+	public int exceptionTableDelete(Agent agent) {
 
-		String query = "SELECT `EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE` FROM `CHROME_EXCEPTION_DETAILS`"
-				+ " WHERE EMAIL_ID='" + agent.getEmailId() + "' AND FROM_TIME >='" + agent.getFromDate()
-				+ "' AND TO_TIME <='" + agent.getToDate() + "' ORDER BY FROM_TIME";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside fetchdataFromChromeExceptionDetails()");
-
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside exceptionTableDelete()");
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
-			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-				Agent agent = new Agent();
-
-				agent.setEmailId(resultset.getString(1));
-				agent.setFromDate(resultset.getString(2));
-				agent.setToDate(resultset.getString(3));
-				agent.setWebsitesVisited(resultset.getString(4));
-				agent.setActivityCode(resultset.getString(5));
-				agent.setRownum(rownumber);
-
-				return agent;
-			}
-		});
+		return jdbcTemplate.update(deleteException,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, agent.getEmailId().trim());
+                preparedStatement.setString(2, agent.getFromDate());
+               
+            }
+        });
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see com.automation.idao.IAgentDAO#
-	 * dataInsertionInDayDetailFromExceptionDetails(com.automation.vo.Agent)
-	 * This method will move Transactions from Chrome Exception Table to Day
-	 * Detail Table
-	 */
-	public int dataInsertionInDayDetailFromExceptionDetails(Agent e) {
-
-		String query = "INSERT INTO `DAY_DETAIL` (`EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE`) SELECT `EMAIL_ID`,`AGENT_NAME`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE` FROM `CHROME_EXCEPTION_DETAILS`"
-				+ " WHERE EMAIL_ID='" + e.getEmailId() + "' AND FROM_TIME >='" + e.getFromDate() + "' AND TO_TIME <='"
-				+ e.getToDate() + "'";
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataInsertionInException()");
-			LOGGER.info("query==" + query);
-
-		}
-		return jdbcTemplate.update(query);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#deleteFromChromeException(com.automation.vo
-	 * .Agent) This method will delete data from Chrome Exception Table.
-	 */
-	public int deleteFromChromeException(Agent agent) {
-
-		String query = "DELETE FROM CHROME_EXCEPTION_DETAILS " + "WHERE EMAIL_ID='" + agent.getEmailId()
-				+ "'  AND FROM_TIME ='" + agent.getFromDate() + "'";
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside deleteFromChromeException()");
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.update(query);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#dataInsertionInChromeDetails(com.automation
+	 * @see com.automation.idao.IAgentDAO#TemporaryTableInsert(com.automation
 	 * .vo.Agent) This method will insert data in Chrome Temp Detail
 	 */
-	public int dataInsertionInChromeDetails(Agent agent) {
+	@Value("${insert.Temporary}")
+	private String insertTemporary;
+	
+	public int TemporaryTableInsert(Agent agent) {
 
-		String query = "insert into CHROME_TEMP_DETAILS( `EMAIL_ID`,`FROM_TIME`,`TO_TIME`,`WEBSITE_USED`,`ACTIVITY_CODE`) values("
-				+ "'" + agent.getEmailId() + "','" + agent.getFromDate() + "','" + agent.getToDate() + "','"
-				+ agent.getWebsitesVisited() + "'," + agent.getActivityCode() + ")";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataInsertionInChromeDetails()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside TemporaryTableInsert()");
+			
 
 		}
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(insertTemporary,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, agent.getEmailId().trim());
+                preparedStatement.setString(2, agent.getFromDate());
+                preparedStatement.setString(3, agent.getToDate());
+                preparedStatement.setString(4, agent.getWebsitesVisited());
+                preparedStatement.setInt(5, Integer.parseInt(agent.getActivityCode()));
+               
+            }
+        });
 	}
 
-	public int dataUpdationInDayDetails(Agent agent) {
+	@Value("${update.DayDetail}")
+	private String updateDayDetail;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#dayDetailUpdate(com.automation.vo.Agent)
+	 * This method will update data in Day Detail table.
+	 */
+	public int dayDetailUpdate(Agent agent) {
 
-		String query = "UPDATE DAY_DETAIL SET TO_TIME='"+agent.getToDate()+"' WHERE EMAIL_ID='"
-				  + agent.getEmailId() + "' AND DATE='" + agent.getDATE()+ "' AND TO_TIME='" + agent.getFromDate() + "' AND ACTIVITY_CODE="
-				  + agent.getActivityCode();
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataUpdationInDayDetails()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside dayDetailUpdate()");
+		
 
 		}
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(updateDayDetail,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, agent.getToDate());
+                preparedStatement.setString(2, agent.getEmailId().trim());
+                preparedStatement.setString(3, agent.getDATE());
+                preparedStatement.setString(4, agent.getFromDate());
+                preparedStatement.setInt(5, Integer.parseInt(agent.getActivityCode()));
+               
+            }
+        });
 	}
-
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see com.automation.idao.IAgentDAO#idleInterval() This method will fetch
-	 * Idle Interval
+	 * This method will fetch the idle interval.
 	 */
- 
-	public List<Agent> idleInterval(Agent agent) { 
-		String query = "select IFNULL(INTERVAL_SECS,90)  from CHROME_IDLE_INTERVAL WHERE PROJECT_ID="+agent.getProjectId()+
-				" AND SUB_PROJECT_ID="+agent.getSubProjectId()+" AND LOCATION_ID='"+agent.getLocation()+"'";
+	@Value("${select.IdleInterval}")
+	private String selectIdleInterval;
+	public List<Agent> idleInterval(Agent agent) {
+		
 		if (LOGGER.isInfoEnabled()) {
 
 			LOGGER.info("inside idleInterval");
-			LOGGER.info("query======" + query);
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectIdleInterval,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	preparedStatement.setInt(1, Integer.parseInt(agent.getProjectId()));
+            	preparedStatement.setInt(2, Integer.parseInt(agent.getSubProjectId()));
+                preparedStatement.setString(3, agent.getLocation());
+             
+               
+            }
+        }, new RowMapper<Agent>() {
 			/*
 			 * (non-Javadoc)
 			 * 
@@ -602,65 +664,102 @@ String query="";
 			}
 		});
 	}
-	
-	
-	/* (non-Javadoc)
-	 * @see com.automation.idao.IAgentDAO#getDayDetailCount(com.automation.vo.Agent)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.automation.idao.IAgentDAO#dayDetailCount(com.automation.vo.Agent)
+	 * This method will get the count in day detail table.
 	 */
-	public int getDayDetailCount(Agent agent) {
-		String query = "select COUNT(*) from DAY_DETAIL WHERE DATE='" + agent.getDATE() + "' AND EMAIL_ID='"
-				+ agent.getEmailId() + "'";
+	
+	@Value("${select.DayDetailCount}")
+	private String selectDayDetailCount;
+	
+	public int dayDetailCount(Agent agent) {
+	
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside getDayDetailCount()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside dayDetailCount()");
+			
 		}
-		return jdbcTemplate.queryForInt(query);
+		return jdbcTemplate.queryForInt(selectDayDetailCount,
+				new Object[] { agent.getDATE(),agent.getEmailId().trim()});
+		   
 	}
 
-	
- 
 	/**
 	 * @param agent
 	 * @return
 	 */
-	public int checkDayDetailLastActivity(Agent agent) {
-		String query = "select COUNT(*) from DAY_DETAIL WHERE DATE='" + agent.getDATE() + "' AND EMAIL_ID='"
-				+ agent.getEmailId() + "' AND TO_TIME='"+agent.getToDate()+"' AND ACTIVITY_CODE="+agent.getActivityCode();
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside checkDayDetailLastActivity()");
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.queryForInt(query);
-	}
+	@Value("${select.DayDetailActivityCount}")
+	private String selectDayDetailActivityCount;
 	/* (non-Javadoc)
-	 * @see com.automation.idao.IAgentDAO#checkEntryExsistInDayMaster(com.automation.vo.Agent)
+	 * @see com.automation.idao.IAgentDAO#dayDetailLastActivity(com.automation.vo.Agent)
+	 * This method will fetch the last activity from Day Detail table.
 	 */
-	public int checkEntryExsistInDayMaster(Agent agent) {
+	public int dayDetailLastActivity(Agent agent) {
+		
 
-		String query = "select COUNT(*) from DAY_MASTER WHERE DATE='" + agent.getDATE() + "' AND EMAIL_ID='"
-				+ agent.getEmailId() + "'";
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside checkEntryExsistInDayMaster()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside dayDetailLastActivity()");
+			
 		}
-		return jdbcTemplate.queryForInt(query);
+		return jdbcTemplate.queryForInt(selectDayDetailActivityCount,
+				new Object[] { agent.getDATE(),agent.getEmailId().trim(),
+						agent.getToDate(),agent.getActivityCode()});
+		   
 	}
 
-	/* (non-Javadoc)
-	 * @see com.automation.idao.IAgentDAO#getPreviousDayDetailsFromDayMaster(com.automation.vo.Agent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#dayMasterCount(com.automation.
+	 * vo.Agent)
+	 * This method will get the count in day master table.
 	 */
-	public List<Agent> getPreviousDayDetailsFromDayMaster(Agent agent) {
+	@Value("${select.DayMasterCount}")
+	private String selectDayMasterCount;
+	
+	public int dayMasterCount(Agent agent) {
 
-		String query = "select IFNULL(LOGOUT_TIME,''),IFNULL(AGENT_ID,'')  from DAY_MASTER WHERE DATE='"
-				+ agent.getDATE() + "' AND EMAIL_ID='" + agent.getEmailId() + "'";
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("inside dayMasterCount()");
+			
+		}
+		return jdbcTemplate.queryForInt(selectDayMasterCount,
+			 
+                new Object[] { agent.getDATE(), agent.getEmailId().trim()});
+	}
+  
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#dayMasterPreviousDayLogout(com.
+	 * automation.vo.Agent)
+	 * This method will get the previous day logout Time.
+	 */
+	@Value("${select.DayMasterLogOut}")
+	private String selectDayMasterLogOut;
+	
+	public List<Agent> dayMasterPreviousDayLogout(Agent agent) {
+
 		if (LOGGER.isInfoEnabled()) {
 
-			LOGGER.info("inside checkEntryExsistInDayMasters");
-			LOGGER.info("query======" + query);
+			LOGGER.info("inside dayMasterPreviousDayLogout()");
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectDayMasterLogOut,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	preparedStatement.setString(1, agent.getDATE());
+                preparedStatement.setString(2, agent.getEmailId().trim());
+           
+             
+               
+            }
+        }, new RowMapper<Agent>() {
 			/*
 			 * (non-Javadoc)
 			 * 
@@ -678,18 +777,31 @@ String query="";
 		});
 	}
 
-	/* (non-Javadoc)
-	 * @see com.automation.idao.IAgentDAO#geLoginTimeFromDayMaster(com.automation.vo.Agent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.automation.idao.IAgentDAO#getLoginTime(com.automation.vo. Agent)
+	 * This method will get Login Time from Day Master table.
 	 */
-	public List<Agent> geLoginTimeFromDayMaster(Agent agent) { 
-		String query = "select IFNULL(LOGIN_TIME,'') from DAY_MASTER WHERE DATE='" + agent.getDATE()
-				+ "' AND EMAIL_ID='" + agent.getEmailId() + "'";
+	@Value("${select.DayMasterLogIn}")
+	private String selectDayMasterLogIn;
+	public List<Agent> getLoginTime(Agent agent) {
+		
 		if (LOGGER.isInfoEnabled()) {
 
-			LOGGER.info("inside checkEntryExsistInDayMasters");
-			LOGGER.info("query======" + query);
+			LOGGER.info("inside getLoginTime()");
+			
 		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectDayMasterLogIn,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	preparedStatement.setString(1, agent.getDATE());
+                preparedStatement.setString(2, agent.getEmailId().trim());
+           
+             
+               
+            }
+        }, new RowMapper<Agent>() {
 			/*
 			 * (non-Javadoc)
 			 * 
@@ -706,311 +818,47 @@ String query="";
 		});
 	}
 
-	///////////////////////////////////////// UI
-	///////////////////////////////////////// FUNCTIONS//////////////////////////////////////////////////
-	/**
-	 * @param managerName
-	 * @return This method will fetch agent under manager Name
+	@Value("${select.MonthMasterCount}")
+	private String selectMonthMasterCount;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#monthMasterCount(com.automation.vo.Agent)
+	 * This method will get the count from month master.
 	 */
-	public List<Agent> fetchAgentsInfoDayWise(String emailId, String fromDate, String toDate) {
+	public int monthMasterCount(Agent agent) {
+
+	
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(
-					"SELECT IFNULL(DATE_FORMAT(DATE, '%d %b %Y'),''),ROUND(IFNULL(PRODUCTIVITY_HRS,0),2),ROUND(IFNULL(IDLE_HRS,0),2),IFNULL(DATE_FORMAT(LOGIN_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(LOGOUT_TIME, '%d %b %Y %T'),''),IFNULL(SHIFT_DETAILS,'') FROM DAY_MASTER WHERE EMAIL_ID='"
-							+ emailId + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' ORDER BY DATE");
+			LOGGER.info("inside monthMasterCount()");
+			
 		}
-		return jdbcTemplate.query(
-				"SELECT IFNULL(DATE_FORMAT(DATE, '%d %b %Y'),''),ROUND(IFNULL(PRODUCTIVITY_HRS,0),2),ROUND(IFNULL(IDLE_HRS,0),2),IFNULL(DATE_FORMAT(LOGIN_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(LOGOUT_TIME, '%d %b %Y %T'),''),IFNULL(SHIFT_DETAILS,'') FROM DAY_MASTER WHERE EMAIL_ID='"
-						+ emailId + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' ORDER BY DATE",
-				new RowMapper<Agent>() {
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
-					 * ResultSet, int)
-					 */
-					public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-						Agent agent = new Agent();
-
-						agent.setDATE(resultset.getString(1));
-
-						agent.setProductiveHours(resultset.getString(2));
-						agent.setIdleHours(resultset.getString(3));
-						agent.setLoginTime(resultset.getString(4));
-						agent.setLogoutTime(resultset.getString(5));
-						agent.setShiftTimings(resultset.getString(6));
-
-						return agent;
-					}
-				});
+		return jdbcTemplate.queryForInt(selectMonthMasterCount,
+				new Object[] { agent.getAgentId(), agent.getMonth(),agent.getYear().trim()});
+		   
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#FetchAgentsInfoOverall(java.lang.String,
-	 * java.lang.String, java.lang.String) This method will fetch agent's over
-	 * all Information
+	@Value("${select.DayMaster}")
+	private String selectDayMaster;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#readDayMaster(com.automation.vo.Agent)
+	 * This method will fetch data from day master.
 	 */
-	public List<Agent> fetchAgentsInfoOverall(String managerName, String fromDate, String toDate) {
+	public List<Agent> readDayMaster(Agent agent) {
+		
+
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(
-					"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
-							+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate
-							+ "' GROUP BY PROJECT_ID ORDER BY AGENT_NAME");
+			LOGGER.info("inside readDayMaster()");
 		}
-		return jdbcTemplate.query(
-				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
-						+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate
-						+ "' GROUP BY PROJECT_ID ORDER BY AGENT_NAME",
-				new RowMapper<Agent>() {
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
-					 * ResultSet, int)
-					 */
-					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
-						Agent agent = new Agent();
-
-						agent.setEmailId(rs.getString(1));
-						agent.setName(rs.getString(2));
-
-						agent.setProductiveHours(rs.getString(3));
-						agent.setIdleHours(rs.getString(4));
-						agent.setShiftTimings(rs.getString(5));
-						agent.setProjectId(rs.getString(6));
-						agent.setLocation(rs.getString(7));
-
-						return agent;
-					}
-				});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#FetchAgentsInfoFilterSpecific(java.lang.
-	 * String, java.lang.String, java.lang.String, java.lang.String,
-	 * java.lang.String, java.lang.String) This method will fetch agent Info
-	 * filter Specific
-	 */
-	public List<Agent> fetchAgentsInfoFilterSpecific(Agent agent) {
-		String managerName = agent.getHcmSupervisorName();
-		String fromDate = agent.getFromDate();
-		String toDate = agent.getToDate();
-		String projectId = agent.getProjectId();
-		String location = agent.getLocation();
-		String shiftTimings = agent.getShiftTimings();
-		StringBuffer filterCriteria = new StringBuffer();
-		if (!projectId.trim().equalsIgnoreCase("")) {
-			filterCriteria = filterCriteria.append("AND PROJECT_ID='" + projectId + "'");
-		}
-
-		if (!location.trim().equalsIgnoreCase("")) {
-			filterCriteria = filterCriteria.append(" AND LOCATION='" + location + "'");
-		}
-
-		if (!shiftTimings.trim().equalsIgnoreCase("")) {
-			filterCriteria = filterCriteria.append(" AND SHIFT_DETAILS='" + shiftTimings + "'");
-		}
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(
-					"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
-							+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' "
-							+ filterCriteria.toString() + " ORDER BY AGENT_NAME");
-		}
-		return jdbcTemplate.query(
-				"SELECT IFNULL(EMAIL_ID,''),IFNULL(AGENT_NAME,''),ROUND(SUM(IFNULL(PRODUCTIVITY_HRS,0)),2),ROUND(SUM(IFNULL(IDLE_HRS,0)),2),IFNULL(SHIFT_DETAILS,''),IFNULL(PROJECT_ID,''),IFNULL(PROJECT_ID,''),IFNULL(LOCATION,'') FROM DAY_MASTER WHERE HCM_SUPERVISOR='"
-						+ managerName + "' AND DATE >= '" + fromDate + "' AND DATE <='" + toDate + "' "
-						+ filterCriteria.toString() + " ORDER BY AGENT_NAME",
-				new RowMapper<Agent>() {
-					public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-						Agent e = new Agent();
-
-						e.setEmailId(resultset.getString(1));
-						e.setName(resultset.getString(2));
-
-						e.setProductiveHours(resultset.getString(3));
-						e.setIdleHours(resultset.getString(4));
-						e.setShiftTimings(resultset.getString(5));
-						e.setProjectId(resultset.getString(6));
-						e.setLocation(resultset.getString(7));
-						return e;
-					}
-				});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#FetchAgentsTransacation(java.lang.String,
-	 * java.lang.String, java.lang.String) This method will fetch Agent's
-	 * Transaction
-	 */
-	public List<Agent> fetchAgentsTransacation(String emailId, String loginTime, String logOutTime) {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(
-					"SELECT IFNULL(DATE_FORMAT(FROM_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(TO_TIME, '%d %b %Y %T'),''),TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME),WEBSITE_USED FROM DAY_DETAIL WHERE EMAIL_ID='"
-							+ emailId + "' AND FROM_TIME >='" + loginTime + "' AND FROM_TIME <='" + logOutTime + "'");
-		}
-		return jdbcTemplate.query(
-				"SELECT IFNULL(DATE_FORMAT(FROM_TIME, '%d %b %Y %T'),''),IFNULL(DATE_FORMAT(TO_TIME, '%d %b %Y %T'),''),TIMESTAMPDIFF(SECOND,FROM_TIME,TO_TIME),WEBSITE_USED FROM DAY_DETAIL WHERE EMAIL_ID='"
-						+ emailId + "' AND FROM_TIME >='" + loginTime + "' AND FROM_TIME <='" + logOutTime + "'",
-				new RowMapper<Agent>() {
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
-					 * ResultSet, int) Mapping of return values from database
-					 */
-					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
-						Agent agent = new Agent();
-						String seconds = rs.getString(3);
-						float minutes = (Float.parseFloat(seconds) / 60);
-
-						agent.setFromDate(rs.getString(1));
-						agent.setToDate(rs.getString(2));
-						agent.setIdleHours(String.valueOf(minutes));
-						agent.setWebsitesVisited(rs.getString(4));
-
-						return agent;
-					}
-				});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.automation.idao.IAgentDAO#FetchAgentsLoginLogoutTime(java.lang.
-	 * String, java.lang.String) This method will fetch agent login and logout
-	 * time.
-	 */
-	public List<Agent> fetchAgentsLoginLogoutTime(String emailid, String date) {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("SELECT IFNULL(LOGIN_TIME,''),IFNULL(LOGOUT_TIME,'') FROM DAY_MASTER WHERE EMAIL_ID='" + emailid
-					+ "' AND DATE= '" + date + "'");
-		}
-		return jdbcTemplate.query("SELECT IFNULL(LOGIN_TIME,''),IFNULL(LOGOUT_TIME,'') FROM DAY_MASTER WHERE EMAIL_ID='"
-				+ emailid + "' AND DATE = '" + date + "'", new RowMapper<Agent>() {
-					public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-						Agent e = new Agent();
-
-						e.setLoginTime(resultset.getString(1));
-						e.setLogoutTime(resultset.getString(2));
-
-						return e;
-					}
-				});
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.automation.idao.IAgentDAO#FetchAgentsProjectId(java.lang.String)
-	 * This method will Fetch Agent's Project Id
-	 */
-	public List<Agent> fetchAgentsProjectId(String managerName) {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("SELECT DISTINCT IFNULL(PROJECT_ID,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
-					+ "' ORDER BY PROJECT_ID");
-		}
-		return jdbcTemplate.query("SELECT DISTINCT IFNULL(PROJECT_ID,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
-				+ managerName + "' ORDER BY PROJECT_ID", new RowMapper<Agent>() {
-					public Agent mapRow(ResultSet reultset, int rownumber) throws SQLException {
-						Agent e = new Agent();
-
-						e.setProjectId(reultset.getString(1));
-
-						return e;
-					}
-				});
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.automation.idao.IAgentDAO#FetchAgentsLocation(java.lang.String)
-	 * This method will fetch Agent's Location
-	 */
-	public List<Agent> fetchAgentsLocation(String managerName) {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("SELECT DISTINCT IFNULL(LOCATION,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='" + managerName
-					+ "' ORDER BY LOCATION");
-		}
-		return jdbcTemplate.query("SELECT DISTINCT IFNULL(LOCATION,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
-				+ managerName + "' ORDER BY LOCATION", new RowMapper<Agent>() {
-					/*
-					 * (non-Javadoc)
-					 * 
-					 * @see
-					 * org.springframework.jdbc.core.RowMapper#mapRow(java.sql.
-					 * ResultSet, int)
-					 */
-					public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
-						Agent agent = new Agent();
-
-						agent.setProjectId(resultset.getString(1));
-
-						return agent;
-					}
-				});
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.automation.idao.IAgentDAO#FetchAgentsShiftTimings(java.lang.String)
-	 * This method will fetch agents shift timings
-	 */
-	public List<Agent> fetchAgentsShiftTimings(String managerName) {
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("SELECT DISTINCT IFNULL(SHIFT_TIMINGS,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
-					+ managerName + "' ORDER BY SHIFT_TIMINGS");
-		}
-		return jdbcTemplate.query("SELECT DISTINCT IFNULL(SHIFT_TIMINGS,'') FROM AGENT_MASTER WHERE HCM_SUPERVISOR='"
-				+ managerName + "' ORDER BY SHIFT_TIMINGS", new RowMapper<Agent>() {
-					public Agent mapRow(ResultSet rs, int rownumber) throws SQLException {
-						Agent e = new Agent();
-
-						e.setProjectId(rs.getString(1));
-
-						return e;
-					}
-				});
-
-	}
-	public int checkEntryExsistInMonthMaster(Agent agent) {
-
-		String query = 	"select COUNT(*) from MONTH_MASTER WHERE AGENT_ID="+agent.getAgentId()+" AND MONTH="+agent.getMonth()
-		+" AND YEAR ="+agent.getYear();
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside checkEntryExsistInMonthMaster()");
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.queryForInt(query);
-	}
-	public List<Agent> readAgentDetailsFromDayMaster(Agent agent) {
-		LOGGER.info("inside readAgentDetailsFromDayMaster()");
-
-		// String query = "select * from CHROME_TEMP_MASTER WHERE LOGIN_TIME <=
-		// '"+ dateFormat.format(cal.getTime()) + " 12:00:00'";
-		String query ="select EMAIL_ID,AGENT_ID,AGENT_NAME,SHIFT_DETAILS,PROJECT_ID,PROJECT_NAME," + 
-				"SUB_PROJECT_ID,SUB_PROJECT_NAME,LOCATION_ID,BILLABLE,ON_OFF,HCM_SUPERVISOR_ID,HCM_SUPERVISOR_NAME,SUM(PROD),SUM(IDLE),AVG(PROD),AVG(IDLE),SUM(BREAK),SUM(MEALS),SUM(HUDDLE),SUM(WELLNESS_SUPPORT),SUM(COACHING),SUM(TEAM_MEETING),SUM(FB_TRAINING),SUM(NON_FB_TRAINING),MONTH(DATE),YEAR(DATE)" + 
-				" from DAY_MASTER  WHERE  MONTH(DATE)="+agent.getMonth() + 
-				"  AND YEAR(DATE) ="+agent.getYear()+" GROUP BY AGENT_ID, MONTH(DATE),YEAR(DATE)";
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("query==" + query);
-		}
-		return jdbcTemplate.query(query, new RowMapper<Agent>() {
+		return jdbcTemplate.query(selectDayMaster,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	
+                preparedStatement.setInt(1,Integer.parseInt(agent.getMonth()));
+                preparedStatement.setInt(2,Integer.parseInt(agent.getYear()));
+           
+             
+               
+            }
+        }, new RowMapper<Agent>() {
 			public Agent mapRow(ResultSet resultset, int rownumber) throws SQLException {
 				Agent e = new Agent();
 				e.setEmailId(resultset.getString(1));
@@ -1045,61 +893,95 @@ String query="";
 			}
 		});
 	}
+	@Value("${insert.MonthMaster}")
+	private String insertMonthMaster;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#monthMasterInsert(com.automation.vo.Agent)
+	 * This method will insert data in month master.
+	 */
+	public int monthMasterInsert(Agent agent) {
 
-	
-	public int dataInsertionInMonthMaster(Agent agent) {
-
-	
-		
-		String query = "INSERT INTO `MONTH_MASTER` (`MONTH`, `YEAR`, `EMAIL_ID`, `AGENT_ID`,`AGENT_NAME`, `SHIFT_DETAILS`,`PROJECT_ID`," + 
-				"`PROJECT_NAME`,`SUB_PROJECT_ID`, `SUB_PROJECT_NAME`,`LOCATION_ID`, `BILLABLE`,  `ON_OFF`," + 
-				"`HCM_SUPERVISOR_ID`,`HCM_SUPERVISOR_NAME`,`PROD_SUM`,`IDLE_SUM`,`PROD_AVG`,`IDLE_AVG`,`BREAK`,`MEALS`,`HUDDLE`,`WELLNESS_SUPPORT`,`COACHING`,`TEAM_MEETING`,`FB_TRAINING`,`NON_FB_TRAINING`  ) VALUES("
-				+ agent.getMonth() + "," +agent.getYear()+ ",'" + agent.getEmailId() + "'," + agent.getAgentId()
-				+ ",'" + agent.getName() + "','" + agent.getShiftTimings()+ "'," + agent.getProjectId() + ",'"
-			 + agent.getProjectName() + "'," + agent.getSubProjectId() + ",'"
-		 + agent.getSubProjectName() + "','" + agent.getLocation()+ "','" + agent.getBillable() + "','"
-		+ agent.getOnshoreOffshore()+ "'," + agent.getHcmSupervisorId()+ ",'" + agent.getHcmSupervisorName() + "',"+
-			agent.getProdSum()+","+ agent.getIdleSum()+","+agent.getProdAvg()+","+agent.getIdleAvg()+","+
-			agent.getBreakSum()+","+agent.getMealsSum()+","+agent.getHuddleSum()+","+agent.getWelnessSupportSum()+","+agent.getCoachingSum()+","+agent.getTeamMeetingSum()+","+agent.getFbTrainingSum()
-			+","+agent.getNonFbTrainingSum()+")"; 
-				
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataInsertionInMonthMaster()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside monthMasterInsert()");
+			
 		}
 
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(insertMonthMaster,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	
+                preparedStatement.setInt(1,Integer.parseInt(agent.getMonth()));
+                preparedStatement.setInt(2,Integer.parseInt(agent.getYear()));
+                preparedStatement.setString(3, agent.getEmailId().trim());
+                preparedStatement.setInt(4, Integer.parseInt(agent.getAgentId()));
+                preparedStatement.setString(5, agent.getName());
+                preparedStatement.setString(6, agent.getShiftTimings());
+                preparedStatement.setInt(7, Integer.parseInt(agent.getProjectId()));
+                preparedStatement.setString(8, agent.getProjectName());
+                preparedStatement.setInt(9, Integer.parseInt(agent.getSubProjectId()));
+                preparedStatement.setString(10, agent.getSubProjectName());
+                preparedStatement.setString(11, agent.getLocation());
+                preparedStatement.setString(12, agent.getBillable());
+                preparedStatement.setString(13, agent.getOnshoreOffshore());
+                preparedStatement.setInt(14, Integer.parseInt(agent.getHcmSupervisorId()));
+                preparedStatement.setString(15, agent.getHcmSupervisorName());
+                preparedStatement.setFloat(16, Float.parseFloat(agent.getProdSum()));
+                preparedStatement.setFloat(17, Float.parseFloat(agent.getIdleSum()));
+                preparedStatement.setFloat(18, Float.parseFloat(agent.getProdAvg()));
+                preparedStatement.setFloat(19, Float.parseFloat(agent.getIdleAvg()));
+                preparedStatement.setFloat(20, Float.parseFloat(agent.getBreakSum()));
+                preparedStatement.setFloat(21, Float.parseFloat(agent.getMealsSum()));
+                preparedStatement.setFloat(22, Float.parseFloat(agent.getHuddleSum()));
+                preparedStatement.setFloat(23, Float.parseFloat(agent.getWelnessSupportSum()));
+                preparedStatement.setFloat(24, Float.parseFloat(agent.getCoachingSum()));
+                preparedStatement.setFloat(25, Float.parseFloat(agent.getTeamMeetingSum()));
+                preparedStatement.setFloat(26, Float.parseFloat(agent.getFbTrainingSum()));
+                preparedStatement.setFloat(27, Float.parseFloat(agent.getNonFbTrainingSum()));
+                
+  
+               
+            }
+        });
 	}
-	
-	public int dataUpdationInMonthMaster(Agent agent) {
 
-		
-		 
-		String query = "UPDATE `MONTH_MASTER` SET PROD_SUM="+agent.getProdSum()+
-				",IDLE_SUM="+agent.getIdleSum()+",PROD_AVG="+agent.getProdAvg()+
-				",IDLE_AVG="+agent.getIdleAvg()+
-				",BREAK="+agent.getBreakSum()+
-				",MEALS="+agent.getMealsSum()+
-				",HUDDLE="+agent.getHuddleSum()+
-				",WELLNESS_SUPPORT="+agent.getWelnessSupportSum()+
-				",COACHING="+agent.getCoachingSum()+
-				",TEAM_MEETING="+agent.getTeamMeetingSum()+
-				",FB_TRAINING="+agent.getFbTrainingSum()+
-				",NON_FB_TRAINING="+agent.getNonFbTrainingSum()+
-				" WHERE AGENT_ID=" + agent.getAgentId()+
-				" AND MONTH="+agent.getMonth()+
-				" AND YEAR="+agent.getYear();
-			 
- 
+	@Value("${update.MonthMaster}")
+	private String updateMonthMaster;
+	/* (non-Javadoc)
+	 * @see com.automation.idao.IAgentDAO#monthMasterUpdate(com.automation.vo.Agent)
+	 * This method will update month master table.
+	 */
+	public int monthMasterUpdate(Agent agent) {
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("inside dataUpdateionInMonthMaster()");
-			LOGGER.info("query==" + query);
+			LOGGER.info("inside monthMasterUpdate()");
+			
 		}
 
-		return jdbcTemplate.update(query);
+		return jdbcTemplate.update(updateMonthMaster,
+		        new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+            	
+                preparedStatement.setFloat(1, Float.parseFloat(agent.getProdSum()));
+                preparedStatement.setFloat(2, Float.parseFloat(agent.getIdleSum()));
+                preparedStatement.setFloat(3, Float.parseFloat(agent.getProdAvg()));
+                preparedStatement.setFloat(4, Float.parseFloat(agent.getIdleAvg()));
+                preparedStatement.setFloat(5, Float.parseFloat(agent.getBreakSum()));
+                preparedStatement.setFloat(6, Float.parseFloat(agent.getMealsSum()));
+                preparedStatement.setFloat(7, Float.parseFloat(agent.getHuddleSum()));
+                preparedStatement.setFloat(8, Float.parseFloat(agent.getWelnessSupportSum()));
+                preparedStatement.setFloat(9, Float.parseFloat(agent.getCoachingSum()));
+                preparedStatement.setFloat(10, Float.parseFloat(agent.getTeamMeetingSum()));
+                preparedStatement.setFloat(11, Float.parseFloat(agent.getFbTrainingSum()));
+                preparedStatement.setFloat(12, Float.parseFloat(agent.getNonFbTrainingSum()));
+                preparedStatement.setInt(13, Integer.parseInt(agent.getAgentId()));
+                preparedStatement.setInt(14,Integer.parseInt(agent.getMonth()));
+                preparedStatement.setInt(15,Integer.parseInt(agent.getYear()));
+                
+                
+               
+            }
+        });
 	}
-	
-	
+
 }

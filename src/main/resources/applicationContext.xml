@@ -10,6 +10,8 @@
 	
 	<!-- Reading Properties file outside of the WAR -->
 	<context:property-placeholder location="${envfile}"/>
+	<context:property-placeholder location="${queryfile}"/>
+	
 	
 	<!-- MySQL Database Connection -->
 	<bean id="dataSource"
@@ -27,18 +29,17 @@
 	<bean id="agentDAO" class="com.automation.dao.AgentDAO">
 		<property name="jdbcTemplate" ref="jdbcTemplate" />
 	</bean>
-	<bean id="policyDAO" class="com.automation.dao.PolicyDAO">
-		<property name="jdbcTemplate" ref="jdbcTemplate" />
-	</bean>
+ 
 		<bean id="adminDAO" class="com.automation.dao.AdminDAO">
 		<property name="jdbcTemplate" ref="jdbcTemplate" />
 	</bean>
 	
 	<bean id="trackerService" class="com.automation.services.TrackerService">
 		<property name="agentDAO" ref="agentDAO" />
-		<property name="policyDAO" ref="policyDAO" />
 	</bean>
-	
+		<bean id="dashboardService" class="com.automation.services.DashboardServices">
+		<property name="adminDAO" ref="adminDAO" />
+	</bean>
 	<bean id="schedulerTask" class="com.automation.scheduler.SchedulerTask" />
 
 	<!-- Spring Quartz -->

@@ -8,12 +8,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.automation.dao.AgentDAO;
 import com.automation.idao.IAgentDAO;
-import com.automation.idao.IPolicyDAO;
 import com.automation.vo.Agent;
 
 public class SchedulerTask {
@@ -21,20 +21,22 @@ public class SchedulerTask {
 	private IAgentDAO agentDAO;
 	private final static Logger logger = Logger.getLogger(AgentDAO.class);
 
+	@Value("${delete.TemporaryFlag}")
+	private String deleteTemporaryFlag;
+	
 	public void scheduler() {
 
-	 
 		try {
 			logger.info("*******************************SCHEDULER STARTED*************************************");
-			logger.info("Reading Temporary Table");
 
+			logger.info("Reading Temporary Table");
 			///////////////////////// READING CHROME TEMPORARY
 			///////////////////////// TABLE///////////////////
 
-			List<Agent> chromtempAgentTransaction = agentDAO.readChromeTempAgentTransactions();
+			List<Agent> chromtempAgentTransaction = agentDAO.readTemporaryTable();
 
 			for (Agent t : chromtempAgentTransaction) {
-
+				
 				String emailId = t.getEmailId().replaceAll("\\s+", "");
 				String activityFromTime = t.getFromDate();
 				String activityToTime = t.getToDate();
@@ -48,7 +50,7 @@ public class SchedulerTask {
 				getDetailsFromDayMasterInput.setEmailId(emailId);
 				getDetailsFromDayMasterInput.setDATE(activityFromDate);
 
-				int entryCountInDayMaster = agentDAO.checkEntryExsistInDayMaster(getDetailsFromDayMasterInput);
+				int entryCountInDayMaster = agentDAO.dayMasterCount(getDetailsFromDayMasterInput);
 
 				if (entryCountInDayMaster == 1) {
 
@@ -59,65 +61,101 @@ public class SchedulerTask {
 					DayDetailsInput.setEmailId(emailId);
 					DayDetailsInput.setToDate(activityFromTime);
 					DayDetailsInput.setActivityCode(activityCode);
-					
-					int dayDetailLastActivity = agentDAO.checkDayDetailLastActivity(DayDetailsInput);
-					if(dayDetailLastActivity == 0)
-					{
-					int dayDetailCount = agentDAO.getDayDetailCount(DayDetailsInput);
 
-					Agent dataInsertInDayDetail = new Agent();
-					dataInsertInDayDetail.setEmailId(emailId);
-					dataInsertInDayDetail.setFromDate(t.getFromDate());
-					dataInsertInDayDetail.setToDate(t.getToDate());
-					dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
-					dataInsertInDayDetail.setActivityCode(t.getActivityCode());
-					dataInsertInDayDetail.setRownum((dayDetailCount + 1));
-					dataInsertInDayDetail.setDATE(activityFromDate);
+					int dayDetailLastActivity = agentDAO.dayDetailLastActivity(DayDetailsInput);
+					if (dayDetailLastActivity == 0) {
+						int dayDetailCount = agentDAO.dayDetailCount(DayDetailsInput);
 
-					int insertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
-					if (insertInDayDetailStatus >= 0) {
-						logger.info("Data is Successfully Inserted in Day Detail Table");
-						logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+						Agent dataInsertInDayDetail = new Agent();
+						dataInsertInDayDetail.setEmailId(emailId);
+						dataInsertInDayDetail.setFromDate(t.getFromDate());
+						dataInsertInDayDetail.setToDate(t.getToDate());
+						dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
+						dataInsertInDayDetail.setActivityCode(t.getActivityCode());
+						dataInsertInDayDetail.setRownum((dayDetailCount + 1));
+						dataInsertInDayDetail.setDATE(activityFromDate);
 
-						int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-						if (deleteStatus >= 0) {
-							logger.info("Data is Successfully deleted in Chrome Detail Table");
-							logger.info("No Of Rows Deleted :" + deleteStatus);
+						int insertInDayDetailStatus = agentDAO.dayDetailInsert(dataInsertInDayDetail);
+						if (insertInDayDetailStatus >= 0) {
+							logger.info("Data is Successfully Inserted in Day Detail Table");
+							logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+							
+							if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+							{
+							
+								
+								int deleteStatus = agentDAO.temporaryTableDelete(t);
+								if (deleteStatus >= 0) {
+									logger.info("Data is Successfully deleted in Chrome Detail Table");
+									logger.info("No Of Rows Deleted :" + deleteStatus);
 
-						}
-					}
+								}	
+							}
+							else
+							{
+								int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+								if (insertBkpStatus >= 0) {
+									logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+									logger.info("No Of Rows Inserted :" + insertBkpStatus);
 
-					}
-					else
-					{
+								
+								int deleteStatus = agentDAO.temporaryTableDelete(t);
+								if (deleteStatus >= 0) {
+									logger.info("Data is Successfully deleted in Chrome Detail Table");
+									logger.info("No Of Rows Deleted :" + deleteStatus);
+
+								}	
+								}
+							}
 						
-				 
+						}
+
+					} else {
 
 						Agent dataUpdateInDayDetail = new Agent();
 						dataUpdateInDayDetail.setEmailId(emailId);
 						dataUpdateInDayDetail.setFromDate(activityFromTime);
 						dataUpdateInDayDetail.setToDate(activityToTime);
 						dataUpdateInDayDetail.setActivityCode(activityCode);
-					    dataUpdateInDayDetail.setDATE(activityFromDate);
+						dataUpdateInDayDetail.setDATE(activityFromDate);
 
-						int dataUpdateInDayDetailStatus = agentDAO.dataUpdationInDayDetails(dataUpdateInDayDetail);
+						int dataUpdateInDayDetailStatus = agentDAO.dayDetailUpdate(dataUpdateInDayDetail);
 						if (dataUpdateInDayDetailStatus >= 0) {
 							logger.info("Data is Successfully Updated in Day Detail Table");
 							logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-							int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-							if (deleteStatus >= 0) {
-								logger.info("Data is Successfully deleted in Chrome Detail Table");
-								logger.info("No Of Rows Deleted :" + deleteStatus);
+							if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+							{
+							
+								
+								int deleteStatus = agentDAO.temporaryTableDelete(t);
+								if (deleteStatus >= 0) {
+									logger.info("Data is Successfully deleted in Chrome Detail Table");
+									logger.info("No Of Rows Deleted :" + deleteStatus);
 
+								}	
 							}
-						}	
-						
+							else
+							{
+								int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+								if (insertBkpStatus >= 0) {
+									logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+									logger.info("No Of Rows Inserted :" + insertBkpStatus);
+
+								
+								int deleteStatus = agentDAO.temporaryTableDelete(t);
+								if (deleteStatus >= 0) {
+									logger.info("Data is Successfully deleted in Chrome Detail Table");
+									logger.info("No Of Rows Deleted :" + deleteStatus);
+
+								}	
+								}
+							}
+						}
+
 					}
-					
-					
-					List<Agent> loginDetailsFromDayMaster = agentDAO
-							.geLoginTimeFromDayMaster(getDetailsFromDayMasterInput);
+
+					List<Agent> loginDetailsFromDayMaster = agentDAO.getLoginTime(getDetailsFromDayMasterInput);
 					String loginTimeFromDayMaster = "";
 					for (Agent loginTimeFromDayMasterList : loginDetailsFromDayMaster) {
 						loginTimeFromDayMaster = loginTimeFromDayMasterList.getLoginTime();
@@ -128,7 +166,7 @@ public class SchedulerTask {
 					activityHrsCalculation.setFromDate(loginTimeFromDayMaster);
 					activityHrsCalculation.setToDate(t.getToDate());
 
-					List<Agent> activitydetails = agentDAO.calculateActiviyHrs(activityHrsCalculation);
+					List<Agent> activitydetails = agentDAO.activityHrsCalculation(activityHrsCalculation);
 
 					String ACT_O1 = "0";
 					String ACT_O2 = "0";
@@ -177,18 +215,23 @@ public class SchedulerTask {
 						}
 
 					}
-
-					String activityHrs = "PROD=" + ACT_O1 + ",IDLE=" + ACT_O2 + ",BREAK=" + ACT_O3 + ",MEALS=" + ACT_O4
-							+ ",HUDDLE=" + ACT_O5 + ",WELLNESS_SUPPORT=" + ACT_O6 + ",COACHING=" + ACT_O7
-							+ ",TEAM_MEETING=" + ACT_O8 + ",FB_TRAINING=" + ACT_O9 + ",NON_FB_TRAINING=" + ACT_10;
-
+ 
 					Agent dataUpdateInDayMaster = new Agent();
 
 					dataUpdateInDayMaster.setEmailId(emailId);
 					dataUpdateInDayMaster.setDATE(activityFromDate);
-					dataUpdateInDayMaster.setActivityHrs(activityHrs);
+					dataUpdateInDayMaster.setProdSum(ACT_O1);
+					dataUpdateInDayMaster.setIdleSum(ACT_O2);
+					dataUpdateInDayMaster.setBreakSum(ACT_O3);
+					dataUpdateInDayMaster.setMealsSum(ACT_O4);
+					dataUpdateInDayMaster.setHuddleSum(ACT_O5);
+					dataUpdateInDayMaster.setWelnessSupportSum(ACT_O6);
+					dataUpdateInDayMaster.setCoachingSum(ACT_O7);
+					dataUpdateInDayMaster.setTeamMeetingSum(ACT_O8);
+					dataUpdateInDayMaster.setFbTrainingSum(ACT_O9);
+					dataUpdateInDayMaster.setNonFbTrainingSum(ACT_10);
 					dataUpdateInDayMaster.setLogoutTime(t.getToDate());
-					int updateInDayMasterStatus = agentDAO.dataUpdationInDayMaster(dataUpdateInDayMaster);
+					int updateInDayMasterStatus = agentDAO.dayMasterUpdate(dataUpdateInDayMaster);
 					if (updateInDayMasterStatus >= 0) {
 						logger.info("Data is Successfully Updated in Day Master Table");
 						logger.info("No Of Rows Updated :" + updateInDayMasterStatus);
@@ -206,8 +249,7 @@ public class SchedulerTask {
 						previousDayDetailsInput.setDATE(minusDate(activityFromDate));
 						previousDayDetailsInput.setEmailId(emailId);
 
-						List<Agent> previousDayDetails = agentDAO
-								.getPreviousDayDetailsFromDayMaster(previousDayDetailsInput);
+						List<Agent> previousDayDetails = agentDAO.dayMasterPreviousDayLogout(previousDayDetailsInput);
 
 						String agentIdFromDayMatser = "";
 						String logOutTimeFromDayMatser = "";
@@ -233,65 +275,100 @@ public class SchedulerTask {
 							DayDetailsInput.setEmailId(emailId);
 							DayDetailsInput.setToDate(activityFromTime);
 							DayDetailsInput.setActivityCode(activityCode);
-							
-							int dayDetailLastActivity = agentDAO.checkDayDetailLastActivity(DayDetailsInput);
-							if(dayDetailLastActivity == 0)
-							{
-							int dayDetailCount = agentDAO.getDayDetailCount(DayDetailsInput);
 
-							Agent dataInsertInDayDetail = new Agent();
-							dataInsertInDayDetail.setEmailId(emailId);
-							dataInsertInDayDetail.setFromDate(t.getFromDate());
-							dataInsertInDayDetail.setToDate(t.getToDate());
-							dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
-							dataInsertInDayDetail.setActivityCode(t.getActivityCode());
-							dataInsertInDayDetail.setRownum((dayDetailCount + 1));
-							dataInsertInDayDetail.setDATE(previousDate);
+							int dayDetailLastActivity = agentDAO.dayDetailLastActivity(DayDetailsInput);
+							if (dayDetailLastActivity == 0) {
+								int dayDetailCount = agentDAO.dayDetailCount(DayDetailsInput);
 
-							int insertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
-							if (insertInDayDetailStatus >= 0) {
-								logger.info("Data is Successfully Inserted in Day Detail Table");
-								logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+								Agent dataInsertInDayDetail = new Agent();
+								dataInsertInDayDetail.setEmailId(emailId);
+								dataInsertInDayDetail.setFromDate(t.getFromDate());
+								dataInsertInDayDetail.setToDate(t.getToDate());
+								dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
+								dataInsertInDayDetail.setActivityCode(t.getActivityCode());
+								dataInsertInDayDetail.setRownum((dayDetailCount + 1));
+								dataInsertInDayDetail.setDATE(previousDate);
 
-								int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-								if (deleteStatus >= 0) {
-									logger.info("Data is Successfully deleted in Chrome Detail Table");
-									logger.info("No Of Rows Deleted :" + deleteStatus);
+								int insertInDayDetailStatus = agentDAO.dayDetailInsert(dataInsertInDayDetail);
+								if (insertInDayDetailStatus >= 0) {
+									logger.info("Data is Successfully Inserted in Day Detail Table");
+									logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
 
+									if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+									{
+									
+										
+										int deleteStatus = agentDAO.temporaryTableDelete(t);
+										if (deleteStatus >= 0) {
+											logger.info("Data is Successfully deleted in Chrome Detail Table");
+											logger.info("No Of Rows Deleted :" + deleteStatus);
+
+										}	
+									}
+									else
+									{
+										int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+										if (insertBkpStatus >= 0) {
+											logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+											logger.info("No Of Rows Inserted :" + insertBkpStatus);
+
+										
+										int deleteStatus = agentDAO.temporaryTableDelete(t);
+										if (deleteStatus >= 0) {
+											logger.info("Data is Successfully deleted in Chrome Detail Table");
+											logger.info("No Of Rows Deleted :" + deleteStatus);
+
+										}	
+										}
+									}
 								}
-							}
 
-							}
-							else
-							{
-								
-						 
+							} else {
 
 								Agent dataUpdateInDayDetail = new Agent();
 								dataUpdateInDayDetail.setEmailId(emailId);
 								dataUpdateInDayDetail.setFromDate(activityFromTime);
 								dataUpdateInDayDetail.setToDate(activityToTime);
 								dataUpdateInDayDetail.setActivityCode(activityCode);
-							    dataUpdateInDayDetail.setDATE(previousDate);
+								dataUpdateInDayDetail.setDATE(previousDate);
 
-								int dataUpdateInDayDetailStatus = agentDAO.dataUpdationInDayDetails(dataUpdateInDayDetail);
+								int dataUpdateInDayDetailStatus = agentDAO.dayDetailUpdate(dataUpdateInDayDetail);
 								if (dataUpdateInDayDetailStatus >= 0) {
 									logger.info("Data is Successfully Updated in Day Detail Table");
 									logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-									int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-									if (deleteStatus >= 0) {
-										logger.info("Data is Successfully deleted in Chrome Detail Table");
-										logger.info("No Of Rows Deleted :" + deleteStatus);
+									if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+									{
+									
+										
+										int deleteStatus = agentDAO.temporaryTableDelete(t);
+										if (deleteStatus >= 0) {
+											logger.info("Data is Successfully deleted in Chrome Detail Table");
+											logger.info("No Of Rows Deleted :" + deleteStatus);
 
+										}	
 									}
-								}	
-								
-							}
-							
+									else
+									{
+										int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+										if (insertBkpStatus >= 0) {
+											logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+											logger.info("No Of Rows Inserted :" + insertBkpStatus);
 
-							List<Agent> loginDetailsFromDayMaster = agentDAO
-									.geLoginTimeFromDayMaster(getDetailsFromDayMasterInput);
+										
+										int deleteStatus = agentDAO.temporaryTableDelete(t);
+										if (deleteStatus >= 0) {
+											logger.info("Data is Successfully deleted in Chrome Detail Table");
+											logger.info("No Of Rows Deleted :" + deleteStatus);
+
+										}	
+										}
+									}
+								}
+
+							}
+
+							List<Agent> loginDetailsFromDayMaster = agentDAO.getLoginTime(getDetailsFromDayMasterInput);
 							String loginTimeFromDayMaster = "";
 							for (Agent loginTimeFromDayMasterList : loginDetailsFromDayMaster) {
 								loginTimeFromDayMaster = loginTimeFromDayMasterList.getLoginTime();
@@ -302,7 +379,7 @@ public class SchedulerTask {
 							activityHrsCalculation.setFromDate(loginTimeFromDayMaster);
 							activityHrsCalculation.setToDate(t.getToDate());
 
-							List<Agent> activitydetails = agentDAO.calculateActiviyHrs(activityHrsCalculation);
+							List<Agent> activitydetails = agentDAO.activityHrsCalculation(activityHrsCalculation);
 
 							String ACT_O1 = "0";
 							String ACT_O2 = "0";
@@ -352,18 +429,23 @@ public class SchedulerTask {
 
 							}
 
-							String activityHrs = "PROD=" + ACT_O1 + ",IDLE=" + ACT_O2 + ",BREAK=" + ACT_O3 + ",MEALS="
-									+ ACT_O4 + ",HUDDLE=" + ACT_O5 + ",WELLNESS_SUPPORT=" + ACT_O6 + ",COACHING="
-									+ ACT_O7 + ",TEAM_MEETING=" + ACT_O8 + ",FB_TRAINING=" + ACT_O9
-									+ ",NON_FB_TRAINING=" + ACT_10;
-
+						 
 							Agent dataUpdateInDayMaster = new Agent();
 
 							dataUpdateInDayMaster.setEmailId(emailId);
 							dataUpdateInDayMaster.setDATE(previousDate);
-							dataUpdateInDayMaster.setActivityHrs(activityHrs);
+							dataUpdateInDayMaster.setProdSum(ACT_O1);
+							dataUpdateInDayMaster.setIdleSum(ACT_O2);
+							dataUpdateInDayMaster.setBreakSum(ACT_O3);
+							dataUpdateInDayMaster.setMealsSum(ACT_O4);
+							dataUpdateInDayMaster.setHuddleSum(ACT_O5);
+							dataUpdateInDayMaster.setWelnessSupportSum(ACT_O6);
+							dataUpdateInDayMaster.setCoachingSum(ACT_O7);
+							dataUpdateInDayMaster.setTeamMeetingSum(ACT_O8);
+							dataUpdateInDayMaster.setFbTrainingSum(ACT_O9);
+							dataUpdateInDayMaster.setNonFbTrainingSum(ACT_10);
 							dataUpdateInDayMaster.setLogoutTime(t.getToDate());
-							int updateInDayMasterStatus = agentDAO.dataUpdationInDayMaster(dataUpdateInDayMaster);
+							int updateInDayMasterStatus = agentDAO.dayMasterUpdate(dataUpdateInDayMaster);
 							if (updateInDayMasterStatus >= 0) {
 								logger.info("Data is Successfully Updated in Day Master Table");
 								logger.info("No Of Rows Updated :" + updateInDayMasterStatus);
@@ -380,7 +462,7 @@ public class SchedulerTask {
 
 					if (!updateStatusFlag.trim().equalsIgnoreCase("updated")) {
 
-						List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(emailId);
+						List<Agent> agentdetails = agentDAO.readAgentDetails(emailId);
 						String agentName = "";
 
 						String projectId = "";
@@ -423,18 +505,16 @@ public class SchedulerTask {
 						logger.info("projectName" + projectName);
 						logger.info("subProjectName" + subProjectName);
 						logger.info("subProjectId" + subProjectId);
-						
+
 						int shiftHour = Integer.parseInt(activityFromtimeSplt[0]);
-                 String shiftTime="";
+						String shiftTime = "";
 						if (shiftHour >= 0 && shiftHour <= 3) {
-							
-							shiftTime=activityFromDatesplit[1];
+
+							shiftTime = activityFromDatesplit[1];
+						} else {
+							shiftTime = activityFromDatesplit[1];
 						}
-						else
-						{
-							shiftTime=activityFromDatesplit[1];
-						} 
-						
+
 						Agent shiftTimingsInput = new Agent();
 						shiftTimingsInput.setProjectId(projectId);
 						shiftTimingsInput.setSubProjectId(subProjectId);
@@ -462,118 +542,143 @@ public class SchedulerTask {
 						}
 						t.setErrorDesc(errorDesc);
 
-						if (agentName.trim().equalsIgnoreCase("") ) {
+						if (agentName.trim().equalsIgnoreCase("")) {
 
-							int insertStatus = agentDAO.dataInsertionInException(t);
+							int insertStatus = agentDAO.exceptionTableInsert(t);
 							if (insertStatus >= 0) {
 								logger.info("Data is Successfully inserted in Chrome Exception Table");
 								logger.info("No Of Rows Inserted :" + insertStatus);
 
-								int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-								if (deleteStatus >= 0) {
-									logger.info("Data is Successfully deleted in Chrome Detail Table");
-									logger.info("No Of Rows Deleted :" + deleteStatus);
+								if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+								{
+								
+									
+									int deleteStatus = agentDAO.temporaryTableDelete(t);
+									if (deleteStatus >= 0) {
+										logger.info("Data is Successfully deleted in Chrome Detail Table");
+										logger.info("No Of Rows Deleted :" + deleteStatus);
 
+									}	
+								}
+								else
+								{
+									int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+									if (insertBkpStatus >= 0) {
+										logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+										logger.info("No Of Rows Inserted :" + insertBkpStatus);
+
+									
+									int deleteStatus = agentDAO.temporaryTableDelete(t);
+									if (deleteStatus >= 0) {
+										logger.info("Data is Successfully deleted in Chrome Detail Table");
+										logger.info("No Of Rows Deleted :" + deleteStatus);
+
+									}	
+									}
 								}
 							}
 
 						} else {
 							///////////
 
-							Agent dataInsertionInDayMaster = new Agent();
+							Agent dayMasterInsert = new Agent();
 							if (shiftHour >= 0 && shiftHour <= 3) {
-								dataInsertionInDayMaster.setDATE(minusDate(activityFromDate));
+								dayMasterInsert.setDATE(minusDate(activityFromDate));
+							} else {
+								dayMasterInsert.setDATE(activityFromDate);
 							}
-							else
-							{
-								dataInsertionInDayMaster.setDATE(activityFromDate);
+
+							dayMasterInsert.setEmailId(emailId);
+							dayMasterInsert.setLoginTime(t.getFromDate());
+							dayMasterInsert.setLogoutTime(t.getToDate());
+							if (shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase("")) {
+								dayMasterInsert.setShiftTimings("N");
+							} else {
+								dayMasterInsert.setShiftTimings(shiftFrom + "-" + shiftTo);
 							}
-							
-							dataInsertionInDayMaster.setEmailId(emailId);
-							dataInsertionInDayMaster.setLoginTime(t.getFromDate());
-							dataInsertionInDayMaster.setLogoutTime(t.getToDate());
-if(shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase(""))
-{
-	dataInsertionInDayMaster.setShiftTimings("N");
-}
-else
-{
-							dataInsertionInDayMaster.setShiftTimings(shiftFrom + "-" + shiftTo);
-}
-							dataInsertionInDayMaster.setProjectId(projectId);
-							dataInsertionInDayMaster.setProjectName(projectName);
-							dataInsertionInDayMaster.setSubProjectId(subProjectId);
-							dataInsertionInDayMaster.setSubProjectName(subProjectName);
-							dataInsertionInDayMaster.setHcmSupervisorId(hcmSupervisorId);
-							dataInsertionInDayMaster.setHcmSupervisorName(hcmSupervisorName);
-							dataInsertionInDayMaster.setBillable(billable);
-							dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
-							dataInsertionInDayMaster.setLocation(location);
-							dataInsertionInDayMaster.setName(agentName);
-							dataInsertionInDayMaster.setAgentId(agentId);
-							int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
+							dayMasterInsert.setProjectId(projectId);
+							dayMasterInsert.setProjectName(projectName);
+							dayMasterInsert.setSubProjectId(subProjectId);
+							dayMasterInsert.setSubProjectName(subProjectName);
+							dayMasterInsert.setHcmSupervisorId(hcmSupervisorId);
+							dayMasterInsert.setHcmSupervisorName(hcmSupervisorName);
+							dayMasterInsert.setBillable(billable);
+							dayMasterInsert.setOnshoreOffshore(onshoreOffshore);
+							dayMasterInsert.setLocation(location);
+							dayMasterInsert.setName(agentName);
+							dayMasterInsert.setAgentId(agentId);
+							int inserStatus = agentDAO.dayMasterInsert(dayMasterInsert);
 
 							if (inserStatus >= 0) {
 								logger.info("Data is Successfully inserted in Day MasterTable");
 								logger.info("No Of Rows Inserted :" + inserStatus);
 
 								// exist
- 
-								
-								
-								
+
 								Agent DayDetailsInput = new Agent();
 								if (shiftHour >= 0 && shiftHour <= 3) {
 									DayDetailsInput.setDATE(minusDate(activityFromDate));
-								 
-								}
-								else
-								{
+
+								} else {
 									DayDetailsInput.setDATE(activityFromDate);
 								}
 								DayDetailsInput.setEmailId(emailId);
 								DayDetailsInput.setToDate(activityFromTime);
 								DayDetailsInput.setActivityCode(activityCode);
-								
-								int dayDetailLastActivity = agentDAO.checkDayDetailLastActivity(DayDetailsInput);
-								if(dayDetailLastActivity == 0)
-								{
-								int dayDetailCount = agentDAO.getDayDetailCount(DayDetailsInput);
 
-								Agent dataInsertInDayDetail = new Agent();
-								dataInsertInDayDetail.setEmailId(emailId);
-								dataInsertInDayDetail.setFromDate(t.getFromDate());
-								dataInsertInDayDetail.setToDate(t.getToDate());
-								dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
-								dataInsertInDayDetail.setActivityCode(t.getActivityCode());
-								dataInsertInDayDetail.setRownum((dayDetailCount + 1));
-								if (shiftHour >= 0 && shiftHour <= 3) {
-									dataInsertInDayDetail.setDATE(minusDate(activityFromDate));
-								 
-								}
-								else
-								{
-									dataInsertInDayDetail.setDATE(activityFromDate);
-								}
+								int dayDetailLastActivity = agentDAO.dayDetailLastActivity(DayDetailsInput);
+								if (dayDetailLastActivity == 0) {
+									int dayDetailCount = agentDAO.dayDetailCount(DayDetailsInput);
 
-								int insertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
-								if (insertInDayDetailStatus >= 0) {
-									logger.info("Data is Successfully Inserted in Day Detail Table");
-									logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+									Agent dataInsertInDayDetail = new Agent();
+									dataInsertInDayDetail.setEmailId(emailId);
+									dataInsertInDayDetail.setFromDate(t.getFromDate());
+									dataInsertInDayDetail.setToDate(t.getToDate());
+									dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
+									dataInsertInDayDetail.setActivityCode(t.getActivityCode());
+									dataInsertInDayDetail.setRownum((dayDetailCount + 1));
+									if (shiftHour >= 0 && shiftHour <= 3) {
+										dataInsertInDayDetail.setDATE(minusDate(activityFromDate));
 
-									int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-									if (deleteStatus >= 0) {
-										logger.info("Data is Successfully deleted in Chrome Detail Table");
-										logger.info("No Of Rows Deleted :" + deleteStatus);
-
+									} else {
+										dataInsertInDayDetail.setDATE(activityFromDate);
 									}
-								}
 
-								}
-								else
-								{
-									
-							 
+									int insertInDayDetailStatus = agentDAO.dayDetailInsert(dataInsertInDayDetail);
+									if (insertInDayDetailStatus >= 0) {
+										logger.info("Data is Successfully Inserted in Day Detail Table");
+										logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+
+										if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+										{
+										
+											
+											int deleteStatus = agentDAO.temporaryTableDelete(t);
+											if (deleteStatus >= 0) {
+												logger.info("Data is Successfully deleted in Chrome Detail Table");
+												logger.info("No Of Rows Deleted :" + deleteStatus);
+
+											}	
+										}
+										else
+										{
+											int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+											if (insertBkpStatus >= 0) {
+												logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+												logger.info("No Of Rows Inserted :" + insertBkpStatus);
+
+											
+											int deleteStatus = agentDAO.temporaryTableDelete(t);
+											if (deleteStatus >= 0) {
+												logger.info("Data is Successfully deleted in Chrome Detail Table");
+												logger.info("No Of Rows Deleted :" + deleteStatus);
+
+											}	
+											}
+										}
+									}
+
+								} else {
 
 									Agent dataUpdateInDayDetail = new Agent();
 									dataUpdateInDayDetail.setEmailId(emailId);
@@ -582,33 +687,49 @@ else
 									dataUpdateInDayDetail.setActivityCode(activityCode);
 									if (shiftHour >= 0 && shiftHour <= 3) {
 										dataUpdateInDayDetail.setDATE(minusDate(activityFromDate));
-									 
-									}
-									else
-									{
+
+									} else {
 										dataUpdateInDayDetail.setDATE(activityFromDate);
 									}
 
-									int dataUpdateInDayDetailStatus = agentDAO.dataUpdationInDayDetails(dataUpdateInDayDetail);
+									int dataUpdateInDayDetailStatus = agentDAO.dayDetailUpdate(dataUpdateInDayDetail);
 									if (dataUpdateInDayDetailStatus >= 0) {
 										logger.info("Data is Successfully Updated in Day Detail Table");
 										logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-										int deleteStatus = agentDAO.deleteFromChromeTempDetail(t);
-										if (deleteStatus >= 0) {
-											logger.info("Data is Successfully deleted in Chrome Detail Table");
-											logger.info("No Of Rows Deleted :" + deleteStatus);
+										if(deleteTemporaryFlag.trim().equalsIgnoreCase("Y"))
+										{
+										
+											
+											int deleteStatus = agentDAO.temporaryTableDelete(t);
+											if (deleteStatus >= 0) {
+												logger.info("Data is Successfully deleted in Chrome Detail Table");
+												logger.info("No Of Rows Deleted :" + deleteStatus);
 
+											}	
 										}
-									}	
-									
+										else
+										{
+											int insertBkpStatus = agentDAO.temporaryBkpTableInsert(t);
+											if (insertBkpStatus >= 0) {
+												logger.info("Data is Successfully Inserted in Temporary Back Up Table");
+												logger.info("No Of Rows Inserted :" + insertBkpStatus);
+
+											
+											int deleteStatus = agentDAO.temporaryTableDelete(t);
+											if (deleteStatus >= 0) {
+												logger.info("Data is Successfully deleted in Chrome Detail Table");
+												logger.info("No Of Rows Deleted :" + deleteStatus);
+
+											}	
+											}
+										}
+									}
+
 								}
-								
-								
-							 
-								
+
 								List<Agent> loginDetailsFromDayMaster = agentDAO
-										.geLoginTimeFromDayMaster(getDetailsFromDayMasterInput);
+										.getLoginTime(getDetailsFromDayMasterInput);
 								String loginTimeFromDayMaster = "";
 								for (Agent loginTimeFromDayMasterList : loginDetailsFromDayMaster) {
 									loginTimeFromDayMaster = loginTimeFromDayMasterList.getLoginTime();
@@ -619,7 +740,7 @@ else
 								activityHrsCalculation.setFromDate(loginTimeFromDayMaster);
 								activityHrsCalculation.setToDate(t.getToDate());
 
-								List<Agent> activitydetails = agentDAO.calculateActiviyHrs(activityHrsCalculation);
+								List<Agent> activitydetails = agentDAO.activityHrsCalculation(activityHrsCalculation);
 
 								String ACT_O1 = "0";
 								String ACT_O2 = "0";
@@ -669,18 +790,23 @@ else
 
 								}
 
-								String activityHrs = "PROD=" + ACT_O1 + ",IDLE=" + ACT_O2 + ",BREAK=" + ACT_O3
-										+ ",MEALS=" + ACT_O4 + ",HUDDLE=" + ACT_O5 + ",WELLNESS_SUPPORT=" + ACT_O6
-										+ ",COACHING=" + ACT_O7 + ",TEAM_MEETING=" + ACT_O8 + ",FB_TRAINING=" + ACT_O9
-										+ ",NON_FB_TRAINING=" + ACT_10;
-
+							 
 								Agent dataUpdateInDayMaster = new Agent();
 
 								dataUpdateInDayMaster.setEmailId(emailId);
 								dataUpdateInDayMaster.setDATE(activityFromDate);
-								dataUpdateInDayMaster.setActivityHrs(activityHrs);
+								dataUpdateInDayMaster.setProdSum(ACT_O1);
+								dataUpdateInDayMaster.setIdleSum(ACT_O2);
+								dataUpdateInDayMaster.setBreakSum(ACT_O3);
+								dataUpdateInDayMaster.setMealsSum(ACT_O4);
+								dataUpdateInDayMaster.setHuddleSum(ACT_O5);
+								dataUpdateInDayMaster.setWelnessSupportSum(ACT_O6);
+								dataUpdateInDayMaster.setCoachingSum(ACT_O7);
+								dataUpdateInDayMaster.setTeamMeetingSum(ACT_O8);
+								dataUpdateInDayMaster.setFbTrainingSum(ACT_O9);
+								dataUpdateInDayMaster.setNonFbTrainingSum(ACT_10);
 								dataUpdateInDayMaster.setLogoutTime(t.getToDate());
-								int updateInDayMasterStatus = agentDAO.dataUpdationInDayMaster(dataUpdateInDayMaster);
+								int updateInDayMasterStatus = agentDAO.dayMasterUpdate(dataUpdateInDayMaster);
 								if (updateInDayMasterStatus >= 0) {
 									logger.info("Data is Successfully Updated in Day Master Table");
 									logger.info("No Of Rows Updated :" + updateInDayMasterStatus);
@@ -698,14 +824,13 @@ else
 
 			logger.info("Reading Exception Table");
 
-		
-			List<Agent> chromtempEmailIds = agentDAO.readChromeExceptionAgentIds();
+			List<Agent> chromtempEmailIds = agentDAO.readExceptionTableAgentIds();
 
 			for (Agent e : chromtempEmailIds) {
 
 				String emailId = e.getEmailId().trim();
 
-				chromtempAgentTransaction = agentDAO.readChromeExceptionAgentTransactions(emailId);
+				chromtempAgentTransaction = agentDAO.readExceptionTable(emailId);
 
 				for (Agent t : chromtempAgentTransaction) {
 
@@ -722,7 +847,7 @@ else
 					getDetailsFromDayMasterInput.setEmailId(emailId);
 					getDetailsFromDayMasterInput.setDATE(activityFromDate);
 
-					int entryCountInDayMaster = agentDAO.checkEntryExsistInDayMaster(getDetailsFromDayMasterInput);
+					int entryCountInDayMaster = agentDAO.dayMasterCount(getDetailsFromDayMasterInput);
 
 					if (entryCountInDayMaster == 1) {
 
@@ -733,65 +858,58 @@ else
 						DayDetailsInput.setEmailId(emailId);
 						DayDetailsInput.setToDate(activityFromTime);
 						DayDetailsInput.setActivityCode(activityCode);
-						
-						int dayDetailLastActivity = agentDAO.checkDayDetailLastActivity(DayDetailsInput);
-						if(dayDetailLastActivity == 0)
-						{
-						int dayDetailCount = agentDAO.getDayDetailCount(DayDetailsInput);
 
-						Agent dataInsertInDayDetail = new Agent();
-						dataInsertInDayDetail.setEmailId(emailId);
-						dataInsertInDayDetail.setFromDate(t.getFromDate());
-						dataInsertInDayDetail.setToDate(t.getToDate());
-						dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
-						dataInsertInDayDetail.setActivityCode(t.getActivityCode());
-						dataInsertInDayDetail.setRownum((dayDetailCount + 1));
-						dataInsertInDayDetail.setDATE(activityFromDate);
+						int dayDetailLastActivity = agentDAO.dayDetailLastActivity(DayDetailsInput);
+						if (dayDetailLastActivity == 0) {
+							int dayDetailCount = agentDAO.dayDetailCount(DayDetailsInput);
 
-						int insertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
-						if (insertInDayDetailStatus >= 0) {
-							logger.info("Data is Successfully Inserted in Day Detail Table");
-							logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+							Agent dataInsertInDayDetail = new Agent();
+							dataInsertInDayDetail.setEmailId(emailId);
+							dataInsertInDayDetail.setFromDate(t.getFromDate());
+							dataInsertInDayDetail.setToDate(t.getToDate());
+							dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
+							dataInsertInDayDetail.setActivityCode(t.getActivityCode());
+							dataInsertInDayDetail.setRownum((dayDetailCount + 1));
+							dataInsertInDayDetail.setDATE(activityFromDate);
 
-							int deleteStatus = agentDAO.deleteFromChromeException(t);
-							if (deleteStatus >= 0) {
-								logger.info("Data is Successfully deleted in Chrome Exception Table");
-								logger.info("No Of Rows Deleted :" + deleteStatus);
+							int insertInDayDetailStatus = agentDAO.dayDetailInsert(dataInsertInDayDetail);
+							if (insertInDayDetailStatus >= 0) {
+								logger.info("Data is Successfully Inserted in Day Detail Table");
+								logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
 
+								int deleteStatus = agentDAO.exceptionTableDelete(t);
+								if (deleteStatus >= 0) {
+									logger.info("Data is Successfully deleted in Chrome Exception Table");
+									logger.info("No Of Rows Deleted :" + deleteStatus);
+
+								}
 							}
-						}
 
-						}
-						else
-						{
-							
-					 
+						} else {
 
 							Agent dataUpdateInDayDetail = new Agent();
 							dataUpdateInDayDetail.setEmailId(emailId);
 							dataUpdateInDayDetail.setFromDate(activityFromTime);
 							dataUpdateInDayDetail.setToDate(activityToTime);
 							dataUpdateInDayDetail.setActivityCode(activityCode);
-						    dataUpdateInDayDetail.setDATE(activityFromDate);
+							dataUpdateInDayDetail.setDATE(activityFromDate);
 
-							int dataUpdateInDayDetailStatus = agentDAO.dataUpdationInDayDetails(dataUpdateInDayDetail);
+							int dataUpdateInDayDetailStatus = agentDAO.dayDetailUpdate(dataUpdateInDayDetail);
 							if (dataUpdateInDayDetailStatus >= 0) {
 								logger.info("Data is Successfully Updated in Day Detail Table");
 								logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-								int deleteStatus = agentDAO.deleteFromChromeException(t);
+								int deleteStatus = agentDAO.exceptionTableDelete(t);
 								if (deleteStatus >= 0) {
 									logger.info("Data is Successfully deleted in Chrome Exception Table");
 									logger.info("No Of Rows Deleted :" + deleteStatus);
 
 								}
-							}	
-							
-						}
-						
+							}
 
-						List<Agent> loginDetailsFromDayMaster = agentDAO
-								.geLoginTimeFromDayMaster(getDetailsFromDayMasterInput);
+						}
+
+						List<Agent> loginDetailsFromDayMaster = agentDAO.getLoginTime(getDetailsFromDayMasterInput);
 						String loginTimeFromDayMaster = "";
 						for (Agent loginTimeFromDayMasterList : loginDetailsFromDayMaster) {
 							loginTimeFromDayMaster = loginTimeFromDayMasterList.getLoginTime();
@@ -802,7 +920,7 @@ else
 						activityHrsCalculation.setFromDate(loginTimeFromDayMaster);
 						activityHrsCalculation.setToDate(t.getToDate());
 
-						List<Agent> activitydetails = agentDAO.calculateActiviyHrs(activityHrsCalculation);
+						List<Agent> activitydetails = agentDAO.activityHrsCalculation(activityHrsCalculation);
 
 						String ACT_O1 = "0";
 						String ACT_O2 = "0";
@@ -852,18 +970,24 @@ else
 
 						}
 
-						String activityHrs = "PROD=" + ACT_O1 + ",IDLE=" + ACT_O2 + ",BREAK=" + ACT_O3 + ",MEALS="
-								+ ACT_O4 + ",HUDDLE=" + ACT_O5 + ",WELLNESS_SUPPORT=" + ACT_O6 + ",COACHING=" + ACT_O7
-								+ ",TEAM_MEETING=" + ACT_O8 + ",FB_TRAINING=" + ACT_O9 + ",NON_FB_TRAINING=" + ACT_10;
-
+						 
 						Agent dataUpdateInDayMaster = new Agent();
 
 						dataUpdateInDayMaster.setEmailId(emailId);
 						dataUpdateInDayMaster.setDATE(activityFromDate);
-						dataUpdateInDayMaster.setActivityHrs(activityHrs);
+						dataUpdateInDayMaster.setProdSum(ACT_O1);
+						dataUpdateInDayMaster.setIdleSum(ACT_O2);
+						dataUpdateInDayMaster.setBreakSum(ACT_O3);
+						dataUpdateInDayMaster.setMealsSum(ACT_O4);
+						dataUpdateInDayMaster.setHuddleSum(ACT_O5);
+						dataUpdateInDayMaster.setWelnessSupportSum(ACT_O6);
+						dataUpdateInDayMaster.setCoachingSum(ACT_O7);
+						dataUpdateInDayMaster.setTeamMeetingSum(ACT_O8);
+						dataUpdateInDayMaster.setFbTrainingSum(ACT_O9);
+						dataUpdateInDayMaster.setNonFbTrainingSum(ACT_10);
 						dataUpdateInDayMaster.setLogoutTime(t.getToDate());
 
-						int updateInDayMasterStatus = agentDAO.dataUpdationInDayMaster(dataUpdateInDayMaster);
+						int updateInDayMasterStatus = agentDAO.dayMasterUpdate(dataUpdateInDayMaster);
 						if (updateInDayMasterStatus >= 0) {
 							logger.info("Data is Successfully Updated in Day Master Table");
 							logger.info("No Of Rows Updated :" + updateInDayMasterStatus);
@@ -882,7 +1006,7 @@ else
 							previousDayDetailsInput.setEmailId(emailId);
 
 							List<Agent> previousDayDetails = agentDAO
-									.getPreviousDayDetailsFromDayMaster(previousDayDetailsInput);
+									.dayMasterPreviousDayLogout(previousDayDetailsInput);
 
 							String agentIdFromDayMatser = "";
 							String logOutTimeFromDayMatser = "";
@@ -908,65 +1032,59 @@ else
 								DayDetailsInput.setEmailId(emailId);
 								DayDetailsInput.setToDate(activityFromTime);
 								DayDetailsInput.setActivityCode(activityCode);
-								
-								int dayDetailLastActivity = agentDAO.checkDayDetailLastActivity(DayDetailsInput);
-								if(dayDetailLastActivity == 0)
-								{
-								int dayDetailCount = agentDAO.getDayDetailCount(DayDetailsInput);
 
-								Agent dataInsertInDayDetail = new Agent();
-								dataInsertInDayDetail.setEmailId(emailId);
-								dataInsertInDayDetail.setFromDate(t.getFromDate());
-								dataInsertInDayDetail.setToDate(t.getToDate());
-								dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
-								dataInsertInDayDetail.setActivityCode(t.getActivityCode());
-								dataInsertInDayDetail.setRownum((dayDetailCount + 1));
-								dataInsertInDayDetail.setDATE(previousDate);
+								int dayDetailLastActivity = agentDAO.dayDetailLastActivity(DayDetailsInput);
+								if (dayDetailLastActivity == 0) {
+									int dayDetailCount = agentDAO.dayDetailCount(DayDetailsInput);
 
-								int insertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
-								if (insertInDayDetailStatus >= 0) {
-									logger.info("Data is Successfully Inserted in Day Detail Table");
-									logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+									Agent dataInsertInDayDetail = new Agent();
+									dataInsertInDayDetail.setEmailId(emailId);
+									dataInsertInDayDetail.setFromDate(t.getFromDate());
+									dataInsertInDayDetail.setToDate(t.getToDate());
+									dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
+									dataInsertInDayDetail.setActivityCode(t.getActivityCode());
+									dataInsertInDayDetail.setRownum((dayDetailCount + 1));
+									dataInsertInDayDetail.setDATE(previousDate);
 
-									int deleteStatus = agentDAO.deleteFromChromeException(t);
-									if (deleteStatus >= 0) {
-										logger.info("Data is Successfully deleted in Chrome Exception Table");
-										logger.info("No Of Rows Deleted :" + deleteStatus);
+									int insertInDayDetailStatus = agentDAO.dayDetailInsert(dataInsertInDayDetail);
+									if (insertInDayDetailStatus >= 0) {
+										logger.info("Data is Successfully Inserted in Day Detail Table");
+										logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
 
-									}
-								}
-
-								}
-								else
-								{
-									
-							 
-
-									Agent dataUpdateInDayDetail = new Agent();
-									dataUpdateInDayDetail.setEmailId(emailId);
-									dataUpdateInDayDetail.setFromDate(activityFromTime);
-									dataUpdateInDayDetail.setToDate(activityToTime);
-								    dataUpdateInDayDetail.setDATE(previousDate);
-									dataUpdateInDayDetail.setActivityCode(activityCode);
-
-									int dataUpdateInDayDetailStatus = agentDAO.dataUpdationInDayDetails(dataUpdateInDayDetail);
-									if (dataUpdateInDayDetailStatus >= 0) {
-										logger.info("Data is Successfully Updated in Day Detail Table");
-										logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
-
-										int deleteStatus = agentDAO.deleteFromChromeException(t);
+										int deleteStatus = agentDAO.exceptionTableDelete(t);
 										if (deleteStatus >= 0) {
 											logger.info("Data is Successfully deleted in Chrome Exception Table");
 											logger.info("No Of Rows Deleted :" + deleteStatus);
 
 										}
-									}	
-									
+									}
+
+								} else {
+
+									Agent dataUpdateInDayDetail = new Agent();
+									dataUpdateInDayDetail.setEmailId(emailId);
+									dataUpdateInDayDetail.setFromDate(activityFromTime);
+									dataUpdateInDayDetail.setToDate(activityToTime);
+									dataUpdateInDayDetail.setDATE(previousDate);
+									dataUpdateInDayDetail.setActivityCode(activityCode);
+
+									int dataUpdateInDayDetailStatus = agentDAO.dayDetailUpdate(dataUpdateInDayDetail);
+									if (dataUpdateInDayDetailStatus >= 0) {
+										logger.info("Data is Successfully Updated in Day Detail Table");
+										logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
+
+										int deleteStatus = agentDAO.exceptionTableDelete(t);
+										if (deleteStatus >= 0) {
+											logger.info("Data is Successfully deleted in Chrome Exception Table");
+											logger.info("No Of Rows Deleted :" + deleteStatus);
+
+										}
+									}
+
 								}
-								
 
 								List<Agent> loginDetailsFromDayMaster = agentDAO
-										.geLoginTimeFromDayMaster(getDetailsFromDayMasterInput);
+										.getLoginTime(getDetailsFromDayMasterInput);
 								String loginTimeFromDayMaster = "";
 								for (Agent loginTimeFromDayMasterList : loginDetailsFromDayMaster) {
 									loginTimeFromDayMaster = loginTimeFromDayMasterList.getLoginTime();
@@ -977,7 +1095,7 @@ else
 								activityHrsCalculation.setFromDate(loginTimeFromDayMaster);
 								activityHrsCalculation.setToDate(t.getToDate());
 
-								List<Agent> activitydetails = agentDAO.calculateActiviyHrs(activityHrsCalculation);
+								List<Agent> activitydetails = agentDAO.activityHrsCalculation(activityHrsCalculation);
 
 								String ACT_O1 = "0";
 								String ACT_O2 = "0";
@@ -1027,18 +1145,27 @@ else
 
 								}
 
-								String activityHrs = "PROD=" + ACT_O1 + ",IDLE=" + ACT_O2 + ",BREAK=" + ACT_O3
-										+ ",MEALS=" + ACT_O4 + ",HUDDLE=" + ACT_O5 + ",WELLNESS_SUPPORT=" + ACT_O6
-										+ ",COACHING=" + ACT_O7 + ",TEAM_MEETING=" + ACT_O8 + ",FB_TRAINING=" + ACT_O9
-										+ ",NON_FB_TRAINING=" + ACT_10;
+								 
 
 								Agent dataUpdateInDayMaster = new Agent();
 
 								dataUpdateInDayMaster.setEmailId(emailId);
 								dataUpdateInDayMaster.setDATE(previousDate);
-								dataUpdateInDayMaster.setActivityHrs(activityHrs);
+								dataUpdateInDayMaster.setProdSum(ACT_O1);
+								dataUpdateInDayMaster.setIdleSum(ACT_O2);
+								dataUpdateInDayMaster.setBreakSum(ACT_O3);
+								dataUpdateInDayMaster.setMealsSum(ACT_O4);
+								dataUpdateInDayMaster.setHuddleSum(ACT_O5);
+								dataUpdateInDayMaster.setWelnessSupportSum(ACT_O6);
+								dataUpdateInDayMaster.setCoachingSum(ACT_O7);
+								dataUpdateInDayMaster.setTeamMeetingSum(ACT_O8);
+								dataUpdateInDayMaster.setFbTrainingSum(ACT_O9);
+								dataUpdateInDayMaster.setNonFbTrainingSum(ACT_10);
+								
+								
+								
 								dataUpdateInDayMaster.setLogoutTime(t.getToDate());
-								int updateInDayMasterStatus = agentDAO.dataUpdationInDayMaster(dataUpdateInDayMaster);
+								int updateInDayMasterStatus = agentDAO.dayMasterUpdate(dataUpdateInDayMaster);
 								if (updateInDayMasterStatus >= 0) {
 									logger.info("Data is Successfully Updated in Day Master Table");
 									logger.info("No Of Rows Updated :" + updateInDayMasterStatus);
@@ -1055,7 +1182,7 @@ else
 
 						if (!updateStatusFlag.trim().equalsIgnoreCase("updated")) {
 
-							List<Agent> agentdetails = agentDAO.readAgentDetailsFromAgentMaster(emailId);
+							List<Agent> agentdetails = agentDAO.readAgentDetails(emailId);
 							String agentName = "";
 
 							String projectId = "";
@@ -1098,16 +1225,14 @@ else
 							logger.info("projectName" + projectName);
 							logger.info("subProjectName" + subProjectName);
 							logger.info("subProjectId" + subProjectId);
-							
+
 							int shiftHour = Integer.parseInt(activityFromtimeSplt[0]);
-	                        String shiftTime="";
+							String shiftTime = "";
 							if (shiftHour >= 0 && shiftHour <= 3) {
-								
-								shiftTime=activityFromDatesplit[1];
-							}
-							else
-							{
-								shiftTime=activityFromDatesplit[1];
+
+								shiftTime = activityFromDatesplit[1];
+							} else {
+								shiftTime = activityFromDatesplit[1];
 							}
 							Agent shiftTimingsInput = new Agent();
 							shiftTimingsInput.setProjectId(projectId);
@@ -1143,39 +1268,34 @@ else
 							} else {
 								///////////
 
-								Agent dataInsertionInDayMaster = new Agent();
+								Agent dayMasterInsert = new Agent();
 
 								if (shiftHour >= 0 && shiftHour <= 3) {
-									dataInsertionInDayMaster.setDATE(minusDate(activityFromDate));
+									dayMasterInsert.setDATE(minusDate(activityFromDate));
+								} else {
+									dayMasterInsert.setDATE(activityFromDate);
 								}
-								else
-								{
-									dataInsertionInDayMaster.setDATE(activityFromDate);
-								}
-								dataInsertionInDayMaster.setEmailId(emailId);
-								dataInsertionInDayMaster.setLoginTime(t.getFromDate());
-								dataInsertionInDayMaster.setLogoutTime(t.getToDate());
+								dayMasterInsert.setEmailId(emailId);
+								dayMasterInsert.setLoginTime(t.getFromDate());
+								dayMasterInsert.setLogoutTime(t.getToDate());
 
-								if(shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase(""))
-								{
-									dataInsertionInDayMaster.setShiftTimings("N");
+								if (shiftFrom.trim().equalsIgnoreCase("") || shiftTo.trim().equalsIgnoreCase("")) {
+									dayMasterInsert.setShiftTimings("N");
+								} else {
+									dayMasterInsert.setShiftTimings(shiftFrom + "-" + shiftTo);
 								}
-								else
-								{
-															dataInsertionInDayMaster.setShiftTimings(shiftFrom + "-" + shiftTo);
-								}
-								dataInsertionInDayMaster.setProjectId(projectId);
-								dataInsertionInDayMaster.setProjectName(projectName);
-								dataInsertionInDayMaster.setSubProjectId(subProjectId);
-								dataInsertionInDayMaster.setSubProjectName(subProjectName);
-								dataInsertionInDayMaster.setHcmSupervisorId(hcmSupervisorId);
-								dataInsertionInDayMaster.setHcmSupervisorName(hcmSupervisorName);
-								dataInsertionInDayMaster.setBillable(billable);
-								dataInsertionInDayMaster.setOnshoreOffshore(onshoreOffshore);
-								dataInsertionInDayMaster.setLocation(location);
-								dataInsertionInDayMaster.setName(agentName);
-								dataInsertionInDayMaster.setAgentId(agentId);
-								int inserStatus = agentDAO.dataInsertionInDayMaster(dataInsertionInDayMaster);
+								dayMasterInsert.setProjectId(projectId);
+								dayMasterInsert.setProjectName(projectName);
+								dayMasterInsert.setSubProjectId(subProjectId);
+								dayMasterInsert.setSubProjectName(subProjectName);
+								dayMasterInsert.setHcmSupervisorId(hcmSupervisorId);
+								dayMasterInsert.setHcmSupervisorName(hcmSupervisorName);
+								dayMasterInsert.setBillable(billable);
+								dayMasterInsert.setOnshoreOffshore(onshoreOffshore);
+								dayMasterInsert.setLocation(location);
+								dayMasterInsert.setName(agentName);
+								dayMasterInsert.setAgentId(agentId);
+								int inserStatus = agentDAO.dayMasterInsert(dayMasterInsert);
 
 								if (inserStatus >= 0) {
 									logger.info("Data is Successfully inserted in Day MasterTable");
@@ -1186,55 +1306,46 @@ else
 									Agent DayDetailsInput = new Agent();
 									if (shiftHour >= 0 && shiftHour <= 3) {
 										DayDetailsInput.setDATE(minusDate(activityFromDate));
-									 
-									}
-									else
-									{
+
+									} else {
 										DayDetailsInput.setDATE(activityFromDate);
 									}
 									DayDetailsInput.setEmailId(emailId);
 									DayDetailsInput.setToDate(activityFromTime);
 									DayDetailsInput.setActivityCode(activityCode);
-									
-									int dayDetailLastActivity = agentDAO.checkDayDetailLastActivity(DayDetailsInput);
-									if(dayDetailLastActivity == 0)
-									{
-									int dayDetailCount = agentDAO.getDayDetailCount(DayDetailsInput);
 
-									Agent dataInsertInDayDetail = new Agent();
-									dataInsertInDayDetail.setEmailId(emailId);
-									dataInsertInDayDetail.setFromDate(t.getFromDate());
-									dataInsertInDayDetail.setToDate(t.getToDate());
-									dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
-									dataInsertInDayDetail.setActivityCode(t.getActivityCode());
-									dataInsertInDayDetail.setRownum((dayDetailCount + 1));
-									if (shiftHour >= 0 && shiftHour <= 3) {
-										dataInsertInDayDetail.setDATE(minusDate(activityFromDate));
-									 
-									}
-									else
-									{
-										dataInsertInDayDetail.setDATE(activityFromDate);
-									}
+									int dayDetailLastActivity = agentDAO.dayDetailLastActivity(DayDetailsInput);
+									if (dayDetailLastActivity == 0) {
+										int dayDetailCount = agentDAO.dayDetailCount(DayDetailsInput);
 
-									int insertInDayDetailStatus = agentDAO.dataInsertionInDayDetail(dataInsertInDayDetail);
-									if (insertInDayDetailStatus >= 0) {
-										logger.info("Data is Successfully Inserted in Day Detail Table");
-										logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+										Agent dataInsertInDayDetail = new Agent();
+										dataInsertInDayDetail.setEmailId(emailId);
+										dataInsertInDayDetail.setFromDate(t.getFromDate());
+										dataInsertInDayDetail.setToDate(t.getToDate());
+										dataInsertInDayDetail.setWebsitesVisited(t.getWebsitesVisited());
+										dataInsertInDayDetail.setActivityCode(t.getActivityCode());
+										dataInsertInDayDetail.setRownum((dayDetailCount + 1));
+										if (shiftHour >= 0 && shiftHour <= 3) {
+											dataInsertInDayDetail.setDATE(minusDate(activityFromDate));
 
-										int deleteStatus = agentDAO.deleteFromChromeException(t);
-										if (deleteStatus >= 0) {
-											logger.info("Data is Successfully deleted in Chrome Exception Table");
-											logger.info("No Of Rows Deleted :" + deleteStatus);
-
+										} else {
+											dataInsertInDayDetail.setDATE(activityFromDate);
 										}
-									}
 
-									}
-									else
-									{
-										
-								 
+										int insertInDayDetailStatus = agentDAO.dayDetailInsert(dataInsertInDayDetail);
+										if (insertInDayDetailStatus >= 0) {
+											logger.info("Data is Successfully Inserted in Day Detail Table");
+											logger.info("No Of Rows Inserted :" + insertInDayDetailStatus);
+
+											int deleteStatus = agentDAO.exceptionTableDelete(t);
+											if (deleteStatus >= 0) {
+												logger.info("Data is Successfully deleted in Chrome Exception Table");
+												logger.info("No Of Rows Deleted :" + deleteStatus);
+
+											}
+										}
+
+									} else {
 
 										Agent dataUpdateInDayDetail = new Agent();
 										dataUpdateInDayDetail.setEmailId(emailId);
@@ -1243,30 +1354,29 @@ else
 										dataUpdateInDayDetail.setActivityCode(activityCode);
 										if (shiftHour >= 0 && shiftHour <= 3) {
 											dataUpdateInDayDetail.setDATE(minusDate(activityFromDate));
-										 
-										}
-										else
-										{
+
+										} else {
 											dataUpdateInDayDetail.setDATE(activityFromDate);
 										}
 
-										int dataUpdateInDayDetailStatus = agentDAO.dataUpdationInDayDetails(dataUpdateInDayDetail);
+										int dataUpdateInDayDetailStatus = agentDAO
+												.dayDetailUpdate(dataUpdateInDayDetail);
 										if (dataUpdateInDayDetailStatus >= 0) {
 											logger.info("Data is Successfully Updated in Day Detail Table");
 											logger.info("No Of Rows Updated :" + dataUpdateInDayDetailStatus);
 
-											int deleteStatus = agentDAO.deleteFromChromeException(t);
+											int deleteStatus = agentDAO.exceptionTableDelete(t);
 											if (deleteStatus >= 0) {
 												logger.info("Data is Successfully deleted in Chrome Exception Table");
 												logger.info("No Of Rows Deleted :" + deleteStatus);
 
 											}
-										}	
-										
+										}
+
 									}
 
 									List<Agent> loginDetailsFromDayMaster = agentDAO
-											.geLoginTimeFromDayMaster(getDetailsFromDayMasterInput);
+											.getLoginTime(getDetailsFromDayMasterInput);
 									String loginTimeFromDayMaster = "";
 									for (Agent loginTimeFromDayMasterList : loginDetailsFromDayMaster) {
 										loginTimeFromDayMaster = loginTimeFromDayMasterList.getLoginTime();
@@ -1277,7 +1387,8 @@ else
 									activityHrsCalculation.setFromDate(loginTimeFromDayMaster);
 									activityHrsCalculation.setToDate(t.getToDate());
 
-									List<Agent> activitydetails = agentDAO.calculateActiviyHrs(activityHrsCalculation);
+									List<Agent> activitydetails = agentDAO
+											.activityHrsCalculation(activityHrsCalculation);
 
 									String ACT_O1 = "0";
 									String ACT_O2 = "0";
@@ -1327,19 +1438,23 @@ else
 
 									}
 
-									String activityHrs = "PROD=" + ACT_O1 + ",IDLE=" + ACT_O2 + ",BREAK=" + ACT_O3
-											+ ",MEALS=" + ACT_O4 + ",HUDDLE=" + ACT_O5 + ",WELLNESS_SUPPORT=" + ACT_O6
-											+ ",COACHING=" + ACT_O7 + ",TEAM_MEETING=" + ACT_O8 + ",FB_TRAINING="
-											+ ACT_O9 + ",NON_FB_TRAINING=" + ACT_10;
-
+								 
 									Agent dataUpdateInDayMaster = new Agent();
 
 									dataUpdateInDayMaster.setEmailId(emailId);
 									dataUpdateInDayMaster.setDATE(activityFromDate);
-									dataUpdateInDayMaster.setActivityHrs(activityHrs);
+									dataUpdateInDayMaster.setProdSum(ACT_O1);
+									dataUpdateInDayMaster.setIdleSum(ACT_O2);
+									dataUpdateInDayMaster.setBreakSum(ACT_O3);
+									dataUpdateInDayMaster.setMealsSum(ACT_O4);
+									dataUpdateInDayMaster.setHuddleSum(ACT_O5);
+									dataUpdateInDayMaster.setWelnessSupportSum(ACT_O6);
+									dataUpdateInDayMaster.setCoachingSum(ACT_O7);
+									dataUpdateInDayMaster.setTeamMeetingSum(ACT_O8);
+									dataUpdateInDayMaster.setFbTrainingSum(ACT_O9);
+									dataUpdateInDayMaster.setNonFbTrainingSum(ACT_10);
 									dataUpdateInDayMaster.setLogoutTime(t.getToDate());
-									int updateInDayMasterStatus = agentDAO
-											.dataUpdationInDayMaster(dataUpdateInDayMaster);
+									int updateInDayMasterStatus = agentDAO.dayMasterUpdate(dataUpdateInDayMaster);
 									if (updateInDayMasterStatus >= 0) {
 										logger.info("Data is Successfully Updated in Day Master Table");
 										logger.info("No Of Rows Updated :" + updateInDayMasterStatus);
@@ -1371,7 +1486,7 @@ else
 	 * @return Difference between two datetime
 	 */
 	public float dateTimeDifference(String dateStart, String dateStop) {
-		logger.error("Inside Date Difference Startdate="+dateStart+" EndDate"+dateStop);
+		logger.error("Inside Date Difference Startdate=" + dateStart + " EndDate" + dateStop);
 		String startDtsplit[] = dateStart.split(" ");
 		String formattedStartDate[] = startDtsplit[0].split("-");
 
@@ -1451,6 +1566,5 @@ else
 		}
 		return "";
 	}
-
 
 }
