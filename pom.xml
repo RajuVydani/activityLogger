@@ -34,6 +34,13 @@
 			<artifactId>jersey-json</artifactId>
 			<version>1.8</version>
 		</dependency>
+		
+		<!-- Jackson JSON Mapper -->
+		<!-- <dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>${jackson.version}</version>
+		</dependency> -->
 
 		<!-- Spring 3 dependencies -->
 		<dependency>

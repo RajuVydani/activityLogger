@@ -1,5 +1,13 @@
 package com.automation.vo;
 
+import java.util.List;
+
+import org.codehaus.jackson.annotate.JsonWriteNullProperties;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+//@JsonInclude(Include.NON_NULL)
+//@JsonWriteNullProperties(false)
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class Agent {
 	/**
 	 * 
@@ -631,6 +639,4 @@ public class Agent {
 	private String teamMeetingSum;
 	private String fbTrainingSum;
 	private String nonFbTrainingSum;
- 
-	
 }
